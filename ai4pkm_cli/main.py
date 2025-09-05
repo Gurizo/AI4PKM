@@ -24,19 +24,8 @@ def main(prompt):
     app = PKMApp()
     
     if prompt:
-        # Execute one-time prompt with log display
-        import threading
-        
-        # Start log tail in background thread
-        log_thread = threading.Thread(target=app._display_log_tail, daemon=True)
-        log_thread.start()
-        
         # Execute the prompt
         app.execute_prompt(prompt)
-        
-        # Give a moment for logs to display
-        import time
-        time.sleep(1)
     else:
         # Run continuously with cron jobs and log display
         app.run_continuous()

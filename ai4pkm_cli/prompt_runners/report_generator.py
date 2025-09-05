@@ -80,7 +80,7 @@ class ReportGenerator:
             }
             
             # Run the promptp prompt with parameters
-            report_content = self.claude_runner.run_prompt("generate_report", params)
+            report_content, _ = self.claude_runner.run_prompt(prompt_name="Adhoc/generate_report", params=params)
             
             if report_content:
                 # Save the report

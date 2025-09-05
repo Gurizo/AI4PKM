@@ -30,20 +30,23 @@ class ClaudeRunner:
             self.logger.error(f"Failed to initialize Claude Code SDK client: {e}")
             self.claude_client = None
         
-    def run_prompt(self, prompt_name, params=None, context=None, session_id=None):
+    def run_prompt(self, inline_prompt=None, prompt_name=None, params=None, context=None, session_id=None):
         """Run a prompt using Claude Code SDK with template parameter replacement."""
-        prompt_file = f"_Settings_/Prompts/{prompt_name}.md"
-        
-        if not os.path.exists(prompt_file):
-            print(prompt_file)
+        if inline_prompt:
+          prompt_content = inline_prompt
+        else:
+          prompt_file = f"_Settings_/Prompts/{prompt_name}.md"
+          
+          if not os.path.exists(prompt_file):
             self.logger.error(f"Prompt file not found: {prompt_file}")
             return None
+          
+          # Read the prompt content
+          with open(prompt_file, 'r') as f:
+              prompt_content = f.read()
+              
             
         try:
-            # Read the prompt content
-            with open(prompt_file, 'r') as f:
-                prompt_content = f.read()
-                
             # Replace template parameters if provided
             if params:
                 for key, value in params.items():

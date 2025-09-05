@@ -54,55 +54,7 @@ class Logger:
     def debug(self, message):
         """Log debug message."""
         self._write_log("DEBUG", message)
-        
-    def tail_logs(self, console):
-        """Display real-time tail of logs.txt."""
-        if not os.path.exists(self.log_file):
-            console.print("[yellow]No log file found yet...[/yellow]")
-            
-        # Get initial file size
-        try:
-            with open(self.log_file, 'r') as f:
-                # Read existing content
-                existing_lines = f.readlines()
-                
-            # Display last 20 lines initially
-            for line in existing_lines[-20:]:
-                self._display_log_line(console, line.rstrip())
-                
-            # Start tailing new content
-            last_size = os.path.getsize(self.log_file)
-            
-            while True:
-                try:
-                    current_size = os.path.getsize(self.log_file)
-                    
-                    if current_size > last_size:
-                        # File has grown, read new content
-                        with open(self.log_file, 'r') as f:
-                            f.seek(last_size)
-                            new_content = f.read()
-                            
-                        # Display new lines
-                        for line in new_content.splitlines():
-                            if line.strip():
-                                self._display_log_line(console, line)
-                                
-                        last_size = current_size
-                        
-                    time.sleep(0.5)  # Check for updates every 500ms
-                    
-                except FileNotFoundError:
-                    # Log file might have been deleted, recreate it
-                    self._ensure_log_file()
-                    last_size = 0
-                    time.sleep(1)
-                    
-        except KeyboardInterrupt:
-            raise
-        except Exception as e:
-            console.print(f"[red]Error tailing logs: {e}[/red]")
-            
+
     def _display_log_line(self, console, line):
         """Display a single log line with appropriate styling."""
         if not line.strip():

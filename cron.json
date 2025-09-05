@@ -1,30 +1,16 @@
 [
   {
-    "prompts": [
-      "Enrich Ingested Content (EIC)",
-      "Topic Knowledge Improvement (TKI)",
-      "Update Folder Notes (UFN)"
-    ],
+    "inline_prompt": "CKU for hourly run",
     "cron": "0 * * * *",
     "description": "Regularly run tasks for keeping knowledge base clean every hour"
   },
   {
-    "prompts": [
-      "Process Life Logs (PLL)",
-      "Enrich Ingested Content (EIC)",
-      "Generate Daily Roundup (GDR)",
-      "Topic Knowledge Addendum (TKA)",
-      "Create Thread Postings (CTP)"
-    ],
+    "inline_prompt": "DIR for today",
     "cron": "0 21 * * *",
     "description": "Daily ingestion and processing of contents into daily roundup at 9 PM"
   },
   {
-    "prompts": [
-      "Enrich Ingested Content (EIC)",
-      "Topic Knowledge Improvement (TKI)",
-      "Update Folder Notes (UFN)"
-    ],
+    "inline_prompt": "WRP for this week",
     "cron": "0 12 * * 0",
     "description": "Weekly review of knowledge base every Sunday at 12 PM"
   }
