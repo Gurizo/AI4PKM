@@ -1,0 +1,12 @@
+.obsidian/
+
+logs.txt
+
+Journal/
+Reports/
+Ingest/
+AI/
+Topics/
+
+__pycache__
+*.egg-info
