@@ -11,8 +11,13 @@ from rich.text import Text
 class Logger:
     """Logger that writes to logs.txt and supports real-time tail display."""
     
-    def __init__(self, log_file="logs.txt", console_output=True):
+    def __init__(self, log_file=None, console_output=True):
         """Initialize logger."""
+        if log_file is None:
+            # Create date-based log filename with ai4pkm prefix
+            date_str = datetime.now().strftime("%Y-%m-%d")
+            log_file = f"ai4pkm_logs_{date_str}.txt"
+        
         self.log_file = log_file
         self.lock = Lock()
         self.console_output = console_output
