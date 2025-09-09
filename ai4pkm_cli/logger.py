@@ -14,9 +14,19 @@ class Logger:
     def __init__(self, log_file=None, console_output=True):
         """Initialize logger."""
         if log_file is None:
+            # Find project root (directory containing this file's parent)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)  # Go up from ai4pkm_cli/ to project root
+            
+            # Create logs directory path
+            logs_dir = os.path.join(project_root, "_Settings_", "Logs")
+            
+            # Ensure logs directory exists
+            os.makedirs(logs_dir, exist_ok=True)
+            
             # Create date-based log filename with ai4pkm prefix
             date_str = datetime.now().strftime("%Y-%m-%d")
-            log_file = f"ai4pkm_logs_{date_str}.txt"
+            log_file = os.path.join(logs_dir, f"ai4pkm_{date_str}.log")
         
         self.log_file = log_file
         self.lock = Lock()
