@@ -57,8 +57,7 @@ class ClaudeRunner:
                 prompt_content = f"{prompt_content}\n\nContext:\n{context}"
             
             # Use claude-code-sdk to run the prompt
-            display_name = prompt_name if prompt_name else inline_prompt
-            result, session_id = self._execute_claude_prompt(prompt_content, display_name, session_id)
+            result, session_id = self._execute_claude_prompt(prompt_content, prompt_name or inline_prompt, session_id)
             if result:
                 return result, session_id
             else:
@@ -102,24 +101,20 @@ class ClaudeRunner:
                                 for block in message.content:
                                     if hasattr(block, 'text'):
                                         extracted_text += block.text
-                                        response_parts.append(block.text)
                             elif hasattr(message.content, 'text'):
                                 extracted_text = message.content.text
-                                response_parts.append(message.content.text)
                             elif isinstance(message.content, str):
                                 extracted_text = message.content
-                                response_parts.append(message.content)
                         elif hasattr(message, 'text'):
                             extracted_text = message.text
-                            response_parts.append(message.text)
                         elif hasattr(message, 'result') and isinstance(message.result, str):
                             extracted_text = message.result
-                            response_parts.append(message.result)
                         elif hasattr(message, 'data') and isinstance(message.data, dict):
                             final_session_id = message.data.get('session_id')
                         
-                        # Log Claude's responses as they come in
+                        # Append extracted text to response and log it
                         if extracted_text:
+                            response_parts.append(extracted_text)
                             self.logger.info(f"{extracted_text}")
                     
                     return ''.join(response_parts), final_session_id
