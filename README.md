@@ -1,4 +1,6 @@
-This vault has been initialized with a production-ready PKM structure for sharing and collaboration.
+This repo contains Starter PKM setup (i.e. Obsidian Vault) for AI4PKM project.
+- [[PKM Guidelines]] document contains the thinking behind AI4PKM project.
+- Read Jin's [PKM in AI Era](https://publish.obsidian.md/lifidea/Publish/PKM+in+AI+Era/0.+Why+PKM+now%3F) series for more tutorials.
 
 ## Directory Structure
 
@@ -27,9 +29,9 @@ This vault has been initialized with a production-ready PKM structure for sharin
 
 ## AI Integration
 This vault is optimized for AI integration with:
-- Claude Code configuration in `CLAUDE.md`
-- Gemini CLI configuration in `GEMINI.md` 
-- Codex CLI configuration in `AGENTS.md` 
+- Claude Code configuration in [[CLAUDE]]
+- Gemini CLI configuration in [[GEMINI]]
+- Codex CLI configuration in [[AGENTS]]
 - Cursor IDE rules in `.cursor/rules/`
 
 ## Community Plugins
@@ -42,7 +44,4 @@ The following plugins are recommended and pre-configured:
 - Templater - Advanced templating
 - Tasks - Task management
 - And more...
-
-## Workflows
-
 

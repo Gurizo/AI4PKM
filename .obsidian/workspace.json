@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "README - Getting Started.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "README - Getting Started"
+              "title": "README"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README - Getting Started.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README - Getting Started"
+              "title": "Backlinks for README"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "README - Getting Started.md",
+                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from README - Getting Started"
+              "title": "Outgoing links from README"
             }
           },
           {
@@ -142,13 +142,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "README - Getting Started.md",
+                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of README - Getting Started"
+              "title": "Outline of README"
             }
           },
           {
@@ -190,7 +190,7 @@
     "_Settings_/Workflows/Daily Ingestion and Roundup (DIR).md",
     "_Settings_/Prompts/_files_/Daily Roundup 2025-07-20 17.29.29.excalidraw.md",
     "_Settings_/Prompts/_files_/Daily Roundup 2025-07-20 17.29.29.excalidraw.svg",
-    "README - Getting Started.md",
+    "README.md",
     "_Settings_/Workflows/Interactive Writing Assistant (IWA).md",
     "_Settings_/Workflows/Continuous Knowledge Upkeep (CKU).md",
     "Projects/Projects.md",
