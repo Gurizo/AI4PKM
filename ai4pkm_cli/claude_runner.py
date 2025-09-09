@@ -25,7 +25,7 @@ class ClaudeRunner:
         try:
             # The query function is available, store it as the client
             self.claude_client = ClaudeCodeClient
-            self.logger.info("Claude Code SDK client initialized successfully")
+            # Claude SDK is ready
         except Exception as e:
             self.logger.error(f"Failed to initialize Claude Code SDK client: {e}")
             self.claude_client = None
@@ -33,18 +33,17 @@ class ClaudeRunner:
     def run_prompt(self, inline_prompt=None, prompt_name=None, params=None, context=None, session_id=None):
         """Run a prompt using Claude Code SDK with template parameter replacement."""
         if inline_prompt:
-          prompt_content = inline_prompt
+            prompt_content = inline_prompt
         else:
-          prompt_file = f"_Settings_/Prompts/{prompt_name}.md"
-          
-          if not os.path.exists(prompt_file):
-            self.logger.error(f"Prompt file not found: {prompt_file}")
-            return None
-          
-          # Read the prompt content
-          with open(prompt_file, 'r') as f:
-              prompt_content = f.read()
-              
+            prompt_file = f"_Settings_/Prompts/{prompt_name}.md"
+            
+            if not os.path.exists(prompt_file):
+                self.logger.error(f"Prompt file not found: {prompt_file}")
+                return None
+            
+            # Read the prompt content
+            with open(prompt_file, 'r') as f:
+                prompt_content = f.read()
             
         try:
             # Replace template parameters if provided
@@ -56,33 +55,26 @@ class ClaudeRunner:
             # Add context if provided
             if context:
                 prompt_content = f"{prompt_content}\n\nContext:\n{context}"
-             
-            self.logger.info(f"Running prompt: {prompt_name}")
             
             # Use claude-code-sdk to run the prompt
-            result, session_id = self._execute_claude_prompt(prompt_content, prompt_name, session_id)
+            result, session_id = self._execute_claude_prompt(prompt_content, prompt_name or inline_prompt, session_id)
             if result:
-                self.logger.info(f"Prompt {prompt_name} executed successfully")
-                self.logger.info(result)
                 return result, session_id
             else:
-                self.logger.error(f"Prompt {prompt_name} execution failed")
+                self.logger.error(f"No response received from Claude")
                 return None
                 
         except Exception as e:
-            self.logger.error(f"Error running prompt {prompt_name}: {e}")
+            self.logger.error(f"Error running prompt: {e}")
             return None
             
     def _execute_claude_prompt(self, prompt_content, prompt_name, session_id=None):
         """Execute the prompt using Claude Code SDK."""
         try:
-            self.logger.info(f"Executing Claude prompt: {prompt_name}")
-            self.logger.info(f"Prompt content length: {len(prompt_content)} characters")
-            
             # Check if Claude client is available
             if self.claude_client is None:
-                self.logger.warning("Claude Code SDK client not available, using fallback")
-                return self._fallback_execution(prompt_content, prompt_name)
+                self.logger.warning("Claude Code SDK not available, using fallback")
+                return self._fallback_execution(prompt_content, prompt_name), None
             
             options = ClaudeCodeOptions(
                 cwd=os.getcwd(),
@@ -90,52 +82,57 @@ class ClaudeRunner:
                 resume=session_id,
             )
 
-            # 1. Claude Code SDK client is already initialized in __init__
-            # 2. Send the prompt to Claude using async query function
+            # Send the prompt to Claude using async query function
             try:
                 import asyncio
                 
                 async def run_query():
                     response_parts = []
-                    session_id = None
+                    final_session_id = None
+                    message_count = 0
+                    
                     async for message in self.claude_client(prompt=prompt_content, options=options):
+                        message_count += 1
+                        
                         # Extract only the text content from the message
+                        extracted_text = ""
                         if hasattr(message, 'content') and message.content:
                             if isinstance(message.content, list):
                                 for block in message.content:
                                     if hasattr(block, 'text'):
-                                        response_parts.append(block.text)
+                                        extracted_text += block.text
                             elif hasattr(message.content, 'text'):
-                                response_parts.append(message.content.text)
+                                extracted_text = message.content.text
                             elif isinstance(message.content, str):
-                                response_parts.append(message.content)
+                                extracted_text = message.content
                         elif hasattr(message, 'text'):
-                            response_parts.append(message.text)
+                            extracted_text = message.text
                         elif hasattr(message, 'result') and isinstance(message.result, str):
-                            response_parts.append(message.result)
+                            extracted_text = message.result
                         elif hasattr(message, 'data') and isinstance(message.data, dict):
-                            session_id = message.data['session_id']
-                    return ''.join(response_parts), session_id
+                            final_session_id = message.data.get('session_id')
+                        
+                        # Append extracted text to response and log it
+                        if extracted_text:
+                            response_parts.append(extracted_text)
+                            self.logger.info(f"{extracted_text}")
+                    
+                    return ''.join(response_parts), final_session_id
 
                 # Run the async query
-                processed_content, session_id = asyncio.run(run_query())
-                self.logger.info("Successfully received response from Claude")
-                
-                # 4. Log the successful execution (outputs are handled by caller)
-                self.logger.info(f"Claude response length: {len(processed_content)} characters")
-                
-                return processed_content, session_id
+                processed_content, final_session_id = asyncio.run(run_query())
+                return processed_content, final_session_id
                 
             except AttributeError as e:
                 self.logger.error(f"Claude SDK API mismatch: {e}")
-                return self._fallback_execution(prompt_content, prompt_name)
+                return self._fallback_execution(prompt_content, prompt_name), None
             except Exception as e:
                 self.logger.error(f"Claude API call failed: {e}")
-                return self._fallback_execution(prompt_content, prompt_name)
+                return self._fallback_execution(prompt_content, prompt_name), None
             
         except Exception as e:
             self.logger.error(f"Claude execution error: {e}")
-            return None
+            return None, None
             
     def _fallback_execution(self, prompt_content, prompt_name):
         """Fallback execution when Claude SDK is not available."""
