@@ -1,6 +1,7 @@
 .obsidian/
 
 logs.txt
+*.log
 
 Journal/
 Reports/
