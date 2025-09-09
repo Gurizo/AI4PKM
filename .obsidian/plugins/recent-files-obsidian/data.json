@@ -1,6 +1,10 @@
 {
   "recentFiles": [
     {
+      "basename": "README - Getting Started",
+      "path": "README - Getting Started.md"
+    },
+    {
       "basename": "README_INIT_VAULT",
       "path": "_Settings_/Tools/README_INIT_VAULT.md"
     },
@@ -195,10 +199,6 @@
     {
       "basename": "Topic Knowledge Creation (TKC)",
       "path": "_Settings_/Prompts/Topic Knowledge Creation (TKC).md"
-    },
-    {
-      "basename": "Continuous Knowledge Upkeep (CKU)",
-      "path": "_Settings_/Workflows/Continuous Knowledge Upkeep (CKU).md"
     }
   ],
   "omittedPaths": [],

@@ -24,8 +24,6 @@ Here's how daily contents are ingested and processed into daily roundup, which i
 %%[[Daily Roundup 2025-07-20 17.29.29.excalidraw.md|🖋 Edit in Excalidraw]]%%
 
 ## Prompts
-![[(beta) Pick and Process Photos (PPP)]]
-
 ![[Process Life Logs (PLL)]]
 
 ![[Generate Daily Roundup (GDR)]]

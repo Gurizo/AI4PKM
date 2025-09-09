@@ -1,6 +1,10 @@
 {
   "recentFiles": [
     {
+      "basename": "Daily Ingestion and Roundup (DIR)",
+      "path": "_Settings_/Workflows/Daily Ingestion and Roundup (DIR).md"
+    },
+    {
       "basename": "AGENTS",
       "path": "AGENTS.md"
     },
@@ -195,10 +199,6 @@
     {
       "basename": "2025-09-01 On Freedom",
       "path": "Ingest/Clippings/2025-09-01 On Freedom.md"
-    },
-    {
-      "basename": "2025-09-01 폭정에 대하여",
-      "path": "Ingest/Clippings/2025-09-01 폭정에 대하여.md"
     }
   ],
   "omittedPaths": [],
