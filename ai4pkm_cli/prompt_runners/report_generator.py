@@ -4,18 +4,18 @@ import os
 from datetime import datetime
 from rich.console import Console
 from rich.prompt import Prompt
-from ..claude_runner import ClaudeRunner
+# Agent will be passed in directly, no need to import
 from ..utils import interactive_select
 
 
 class ReportGenerator:
     """Handles interactive report generation."""
     
-    def __init__(self, logger, claude_runner):
+    def __init__(self, logger, agent):
         """Initialize report generator."""
         self.logger = logger
         self.console = Console()
-        self.claude_runner = claude_runner
+        self.agent = agent
         
     def generate_interactive_report(self):
         """Generate a report with interactive user inputs."""
@@ -79,8 +79,9 @@ class ReportGenerator:
                 "timestamp": datetime.now().isoformat()
             }
             
-            # Run the promptp prompt with parameters
-            report_content, _ = self.claude_runner.run_prompt(prompt_name="Adhoc/generate_report", params=params)
+            # Run the prompt with parameters
+            result = self.agent.run_prompt(prompt_name="Adhoc/generate_report", params=params)
+            report_content = result[0] if result and result[0] else None
             
             if report_content:
                 # Save the report

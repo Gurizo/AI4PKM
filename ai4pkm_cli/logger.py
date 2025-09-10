@@ -14,9 +14,8 @@ class Logger:
     def __init__(self, log_file=None, console_output=True):
         """Initialize logger."""
         if log_file is None:
-            # Find project root (directory containing this file's parent)
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(current_dir)  # Go up from ai4pkm_cli/ to project root
+            # Use current working directory as project root
+            project_root = os.getcwd()
             
             # Create logs directory path
             logs_dir = os.path.join(project_root, "_Settings_", "Logs")
@@ -32,6 +31,10 @@ class Logger:
         self.lock = Lock()
         self.console_output = console_output
         self.console = Console() if console_output else None
+        
+        # Print log file path for user reference
+        # print(f"📝 Log file: {os.path.abspath(self.log_file)}")
+        
         self._ensure_log_file()
         
     def _ensure_log_file(self):

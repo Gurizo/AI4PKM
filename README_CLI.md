@@ -49,47 +49,79 @@ After installation, the CLI will be available as the `ai4pkm` command.
 
 ## 🎯 Usage
 
-The CLI operates in three main modes:
+The CLI operates in several modes:
 
-### 1. Interactive Mode (Default)
+### 1. Default Mode (Information Display)
 
-Run the CLI without arguments to start continuous mode with cron job scheduling:
+Run the CLI without arguments to see current configuration and usage instructions:
 
 ```bash
 ai4pkm
 ```
 
 This will:
-- Load and display configured cron jobs
-- Start the cron scheduler 
-- Show live logs
-- Continue running until stopped with Ctrl+C
+- Show current agent configuration
+- Display scheduled cron jobs
+- List common commands and shortcuts
+- Provide quick usage reference
 
-### 2. One-time Prompt Execution
+### 2. Continuous Cron Mode
 
-Execute a specific prompt immediately:
+Start the cron job scheduler for automated task execution:
 
 ```bash
-# Run a named prompt from _Settings_/Prompts/
-ai4pkm -p "Generate Daily Roundup (GDR)"
+ai4pkm -c
+# or
+ai4pkm --cron
+```
 
-# Run using shortcut code
-ai4pkm -p "GDR"
+This will:
+- Load and start configured cron jobs
+- Run continuously with live logging
+- Execute scheduled tasks automatically
+- Continue running until stopped with Ctrl+C
+
+### 3. One-time Prompt Execution
+
+Execute any prompt immediately by passing it directly to the AI agent:
+
+```bash
+# Execute any arbitrary prompt
+ai4pkm -p "What is machine learning?"
+
+# Multi-line or complex prompts
+ai4pkm -p "Analyze this data and provide insights: [data here]"
 
 # Run special report generator
 ai4pkm -p "generate_report"
 
-# Run an adhoc prompt
-ai4pkm -p "custom_prompt"
+# Creative tasks
+ai4pkm -p "Write a haiku about programming"
 ```
 
-**Named Prompt Resolution:**
-1. Exact match (case insensitive)
-2. Shortcut code matching (e.g., "GDR" matches "Generate Daily Roundup (GDR)")
-3. Partial name matching
-4. Fallback to Adhoc folder
+**Direct Prompt Execution:**
+- All prompts (except "generate_report") are sent directly to the AI agent
+- No file system lookup or template matching required
+- Simple, fast, and flexible for any use case
 
-### 3. Cron Job Testing
+**Per-Prompt Agent Override:**
+You can use a specific agent for just one prompt without changing the global configuration:
+
+```bash
+# Use Gemini for this prompt only
+ai4pkm -a g -p "Translate this to Korean: Hello world"
+
+# Use Codex for coding tasks  
+ai4pkm -a codex -p "Write a Python function to sort a list"
+
+# Use Claude for analysis
+ai4pkm -a c -p "Analyze the pros and cons of remote work"
+
+# Global agent remains unchanged
+ai4pkm --show-config
+```
+
+### 4. Cron Job Testing
 
 Test a specific cron job interactively:
 
@@ -103,7 +135,66 @@ This will:
 - Show execution time and results
 - Useful for debugging scheduled tasks
 
+### 5. AI Agent Management
+
+The CLI supports multiple AI agents. Manage them using these commands:
+
+```bash
+# List all available agents and their status
+ai4pkm --list-agents
+
+# Show current configuration
+ai4pkm --show-config
+
+# Switch to a different agent (full names)
+ai4pkm --agent claude_code
+ai4pkm --agent gemini_cli
+ai4pkm --agent codex_cli
+
+# Or use convenient shortcuts
+ai4pkm -a c       # Claude
+ai4pkm -a g       # Gemini  
+ai4pkm -a o       # Codex
+
+# Or use full names
+ai4pkm -a claude  # Claude
+ai4pkm -a gemini  # Gemini
+ai4pkm -a codex   # Codex
+```
+
+**Available Agents:**
+- **Claude Code**: Uses Claude Code SDK (default)
+- **Gemini CLI**: Uses Google Gemini CLI
+- **Codex CLI**: Uses OpenAI Codex CLI
+
+The system automatically falls back to available agents if the selected one is not configured.
+
 ## ⚙️ Configuration
+
+### AI Agent Configuration (`_Settings_/ai4pkm_config.json`)
+
+The CLI automatically creates a configuration file to manage AI agent settings:
+
+```json
+{
+  "agent": "claude_code",
+  "claude_code": {
+    "permission_mode": "bypassPermissions"
+  },
+  "gemini_cli": {
+    "command": "gemini"
+  },
+  "codex_cli": {
+    "command": "codex"
+  }
+}
+```
+
+**Configuration Options:**
+- `agent`: Current active agent (claude_code, gemini_cli, codex_cli)  
+- Each agent section contains agent-specific settings
+- CLI commands can be customized for different installations
+- CLI-based agents (Gemini, Codex) use their respective default models
 
 ### Cron Jobs (`cron.json`)
 
@@ -212,6 +303,19 @@ Time range: {start_time} to {end_time}
    - Check log output for errors
    - Test individual jobs with `-t` flag
 
+5. **Agent not available**
+   - Use `--list-agents` to check agent status
+   - For Gemini CLI: Install Google AI CLI tools
+   - For Codex CLI: Install OpenAI CLI tools
+   - System automatically falls back to available agents
+
+6. **Agent switching not working**
+   - Check `_Settings_/ai4pkm_config.json` permissions
+   - Verify agent type spelling (claude_code, gemini_cli, codex_cli)
+   - Use shortcuts: `-a c/claude`, `-a g/gemini`, `-a o/codex`
+   - Use `--show-config` to verify current settings
+   - Per-prompt agents: `ai4pkm -a g -p "prompt"` doesn't change global config
+
 ### Debug Mode
 
 For detailed debugging, check the logs in `_Settings_/Logs/` or run with verbose console output.
@@ -224,8 +328,11 @@ For detailed debugging, check the logs in `_Settings_/Logs/` or run with verbose
 # Set up daily roundup at 9 PM
 echo '[{"inline_prompt": "DIR for today", "cron": "0 21 * * *", "description": "Daily roundup"}]' > cron.json
 
-# Start the scheduler
+# Check the configuration
 ai4pkm
+
+# Start the scheduler
+ai4pkm -c
 
 # Test the job manually
 ai4pkm -t
@@ -234,14 +341,44 @@ ai4pkm -t
 ### Custom Prompt Execution
 
 ```bash
-# Run topic knowledge creation
-ai4pkm -p "TKC"
+# Ask questions directly
+ai4pkm -p "What are the benefits of using a PKM system?"
+
+# Get code help
+ai4pkm -a codex -p "Write a Python script to parse JSON files"
+
+# Content analysis
+ai4pkm -a claude -p "Summarize the key points of this text: [your text]"
 
 # Generate a custom report
 ai4pkm -p "generate_report"
 
-# Run adhoc analysis
-ai4pkm -p "analyze_recent_notes"
+# Creative writing
+ai4pkm -p "Write a brief introduction to knowledge management"
+```
+
+### Agent Management
+
+```bash
+# Check available agents
+ai4pkm --list-agents
+
+# Switch to Gemini for better multilingual support
+ai4pkm -a g
+
+# Use Codex for coding tasks  
+ai4pkm -a o
+
+# Show current agent configuration
+ai4pkm --show-config
+
+# Run a prompt with specific agent (shortcuts work too)
+ai4pkm -a c -p "GDR"
+
+# Use different agents for different tasks
+ai4pkm -a gemini -p "translate_document"    # Gemini for multilingual tasks
+ai4pkm -a codex -p "generate_code"          # Codex for coding tasks
+ai4pkm -a claude -p "analyze_content"       # Claude for analysis
 ```
 
 ## 🤝 Contributing

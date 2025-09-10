@@ -3,12 +3,14 @@
     "inline_prompt": "CKU for hourly run",
     "cron": "0 * * * *",
     "description": "Regularly run tasks for keeping knowledge base clean every hour",
+    "agent": "claude_code"
     "enabled": false
   },
   {
     "inline_prompt": "DIR for today",
     "cron": "0 21 * * *",
     "description": "Daily ingestion and processing of contents into daily roundup at 9 PM",
+    "agent": "gemini_cli"
     "enabled": true
   },
   {
