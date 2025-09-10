@@ -1,5 +1,6 @@
 ```
-Target Week: YYYY-MM-DD(1) ~ YYYY-MM-DD(2) (default: last week)
+Target Week: YYYY-MM-DD(Sun) ~ YYYY-MM-DD(Sat) 
+(default: last week)
 ---
 Generate weekly roundup 
 1. Create note using [[Weekly Roundup Template]]

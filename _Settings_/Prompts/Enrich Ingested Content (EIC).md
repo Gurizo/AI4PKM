@@ -3,7 +3,7 @@
 For the target note do the following:
 - Update the note inline (don't create a new note)
 
-## Improve Capture & Transcript
+## Improve Capture & Transcript (ICT)
 For long articles, chunk the contents first to avoid partial processing
 1. Fix all grammar or transcript errors
    - Translate to Korean for Clippings

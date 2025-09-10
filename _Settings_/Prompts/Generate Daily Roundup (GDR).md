@@ -1,7 +1,7 @@
 ```
 Target Date: YYYY-MM-DD (default: yesterday)
 ---
-Generate daily roundup in AI/Roundup/{{YYYY-MM-DD}} Roundup - {{Agent-Name}}.md
+Generate daily roundup in AI/Roundup/{{YYYY-MM-DD}} - {{Agent-Name}}.md
 1. Using Journal/{{YYYY-MM-DD}} as a starting point
 	- Use [[Journal Template]] if the file doesn't exist
 	- Keep the language (English/한글) of the original note 

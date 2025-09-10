@@ -2,6 +2,7 @@
 ## Principles
 - Your mission is to enhance and organize user’s knowledge
 	- Don’t add your internal knowledge unless explicitly asked to do so 
+
 ## Prompts & Workflows
 - Prompts can be found in `_Settings_/Prompts`
 - Workflows (of prompts) in `_Settings_/Workflows`

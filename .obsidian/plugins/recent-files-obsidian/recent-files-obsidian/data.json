@@ -1,6 +1,22 @@
 {
   "recentFiles": [
     {
+      "basename": "AI4PKM Lecture Planning",
+      "path": "Projects/AI4PKM/AI4PKM Lecture Planning.md"
+    },
+    {
+      "basename": "7-2. Field Guide for AI-powered PKM (실습)",
+      "path": "Publish/PKM in AI Era/7-2. Field Guide for AI-powered PKM (실습).md"
+    },
+    {
+      "basename": "Interactive Writing Assistant (IWA)",
+      "path": "_Settings_/Workflows/Interactive Writing Assistant (IWA).md"
+    },
+    {
+      "basename": "PKM Guidelines",
+      "path": "_Settings_/Guidelines/PKM Guidelines.md"
+    },
+    {
       "basename": "Daily Ingestion and Roundup (DIR)",
       "path": "_Settings_/Workflows/Daily Ingestion and Roundup (DIR).md"
     },
@@ -27,10 +43,6 @@
     {
       "basename": "평생 운동으로서의 골프 - Outline",
       "path": "Publish/Hobbies for Life/평생 운동으로서의 골프 - Outline.md"
-    },
-    {
-      "basename": "Interactive Writing Assistant (IWA)",
-      "path": "_Settings_/Workflows/Interactive Writing Assistant (IWA).md"
     },
     {
       "basename": "2025-09-08",
@@ -105,8 +117,8 @@
       "path": "AI/Research/2025-09-04 Topic Extraction for Catch Up AI.md"
     },
     {
-      "basename": "7. Field Guide for AI-powered PKM",
-      "path": "Publish/PKM in AI Era/7. Field Guide for AI-powered PKM.md"
+      "basename": "7-1. Field Guide for AI-powered PKM",
+      "path": "Publish/PKM in AI Era/7-1. Field Guide for AI-powered PKM.md"
     },
     {
       "basename": "2025-09-03 옵시디언 강좌 - 동기화 및 PKM 활용법",
@@ -187,18 +199,6 @@
     {
       "basename": "2025-09-02",
       "path": "Journal/2025-09-02.md"
-    },
-    {
-      "basename": "2025-09-01 Family Conversation Analysis",
-      "path": "AI/Family Conversation Analysis/2025-09-01 Family Conversation Analysis.md"
-    },
-    {
-      "basename": "Journal Template",
-      "path": "_Settings_/Templates/Journal Template.md"
-    },
-    {
-      "basename": "2025-09-01 On Freedom",
-      "path": "Ingest/Clippings/2025-09-01 On Freedom.md"
     }
   ],
   "omittedPaths": [],

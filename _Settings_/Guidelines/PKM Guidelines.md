@@ -22,8 +22,8 @@ Need to constantly experiment with multiple AI tools and models
 2. Processed contents are then indexed by topic and time period (day/week) that constitute 
 3. Contents in KB are then used in various `Projects` or shared in messages and social media. 
 
-![[PKM Guidelines 2025-07-20 09.43.31.excalidraw.svg]]
-%%[[PKM Guidelines 2025-07-20 09.43.31.excalidraw.md|🖋 Edit in Excalidraw]]%%
+![[PKM Workflow.excalidraw.svg]]
+%%[[PKM Workflow.excalidraw|🖋 Edit in Excalidraw]]%%
 
 ## PKM Workflows
 AI is used extensively for my PKM practices. These workflows ensure my KB is kept up-to-date.
@@ -31,8 +31,8 @@ AI is used extensively for my PKM practices. These workflows ensure my KB is kep
 - [[Weekly Roundup and Planning (WRP)]]
 - [[Continuous Knowledge Upkeep (CKU)]]
 
-![[PKM Guidelines 2025-08-14 12.13.54.excalidraw.svg]]
-%%[[PKM Guidelines 2025-08-14 12.13.54.excalidraw.md|🖋 Edit in Excalidraw]]%%
+![[PKM System Architecture.excalidraw.svg]]
+%%[[PKM System Architecture.excalidraw|🖋 Edit in Excalidraw]]%%
 
 The following prompts and templates are extensively used within workflows to represent individual step and input/output notes.
 - `_Settings_/Prompts`
@@ -41,10 +41,12 @@ The following prompts and templates are extensively used within workflows to rep
 ## PKM Applications
 PKM supports following applications
 ### Ad-hoc Rsesarch
-![[(exp) Ad-hoc Research within PKM (ARP)]]
+![[(beta) Ad-hoc Research within PKM (ARP)]]
 
 ### Contents Creation
-![[PKM in AI Era (slides) 2025-08-18 11.25.13.excalidraw.svg]]
+![[PKM Writing Workflow.excalidraw.svg]]
+![[Interactive Writing Assistant (IWA)]]
+
 ![[Create Thread Postings (CTP)]]
 ## Appendix
 ### Properties

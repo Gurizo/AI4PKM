@@ -1,5 +1,6 @@
 [
   "calendar",
+  "dataview",
   "folder-notes",
   "recent-files-obsidian",
   "obsidian-excalidraw-plugin",
@@ -7,6 +8,5 @@
   "tag-wrangler",
   "obsidian-importer",
   "obsidian-git",
-  "janitor",
-  "dataview"
+  "janitor"
 ]
