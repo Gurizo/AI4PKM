@@ -26,7 +26,9 @@ def main(prompt, test_cron, run_cron, agent, list_agents, show_config):
     signal.signal(signal.SIGINT, signal_handler)
     
     # Initialize the PKM application
-    app = PKMApp()
+    # Suppress default agent logging when using agent override for prompts
+    suppress_logging = bool(agent and prompt)
+    app = PKMApp(suppress_agent_logging=suppress_logging)
     
     if list_agents:
         # List available agents

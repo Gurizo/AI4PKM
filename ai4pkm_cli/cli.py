@@ -19,12 +19,19 @@ from .prompt_runners.report_generator import ReportGenerator
 class PKMApp:
     """Main PKM CLI application."""
     
-    def __init__(self):
+    def __init__(self, suppress_agent_logging=False):
         """Initialize the PKM application."""
         self.console = Console()
         self.logger = Logger(console_output=True)  # Enable console output for main logger
         self.config = Config()
-        self.agent = AgentFactory.create_agent(self.logger, self.config)
+        # Temporarily suppress agent logging if requested
+        if suppress_agent_logging:
+            original_info = self.logger.info
+            self.logger.info = lambda msg: None if "🤖 Using agent:" in msg else original_info(msg)
+            self.agent = AgentFactory.create_agent(self.logger, self.config)
+            self.logger.info = original_info  # Restore logging
+        else:
+            self.agent = AgentFactory.create_agent(self.logger, self.config)
         self.running = False
 
     def find_matching_prompt(self, prompt_query):
@@ -115,7 +122,7 @@ class PKMApp:
                 temp_config = Config()
                 temp_config.config['agent'] = agent_override  # Modify in memory only
                 execution_agent = AgentFactory.create_agent(self.logger, temp_config)
-                self.logger.info(f"Using {execution_agent.get_agent_name()} for this prompt execution")
+                self.logger.info(f"🤖 Using {execution_agent.get_agent_name()} for this prompt execution")
             except Exception as e:
                 self.logger.error(f"Failed to create agent {agent_override}: {e}")
                 execution_agent = self.agent
