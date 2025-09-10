@@ -1,8 +1,6 @@
 """Codex CLI agent implementation."""
 
 import subprocess
-import tempfile
-import os
 from typing import Optional, Tuple, Dict, Any
 from .base_agent import BaseAgent
 
@@ -55,40 +53,27 @@ class CodexAgent(BaseAgent):
     def _execute_codex_prompt(self, prompt_content: str) -> Optional[str]:
         """Execute the prompt using Codex CLI."""
         try:
-            # Create a temporary file for the prompt
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
-                temp_file.write(prompt_content)
-                temp_file_path = temp_file.name
+            # Build the command - use exec for non-interactive mode with direct prompt
+            cmd = [
+                self.command,
+                'exec',
+                prompt_content
+            ]
+            
+            # Add any additional CLI options from config
+            if 'additional_args' in self.config:
+                cmd.extend(self.config['additional_args'])
+            
+            # Execute the command
+            self.logger.debug(f"Executing Codex command: {' '.join(cmd[:3])}... (prompt truncated)")
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            
+            if result.returncode == 0:
+                return result.stdout.strip()
+            else:
+                self.logger.error(f"Codex CLI error (exit code {result.returncode}): {result.stderr}")
+                return None
                 
-            try:
-                # Build the command (use CLI default model)
-                cmd = [
-                    self.command,
-                    'chat',
-                    '--file', temp_file_path
-                ]
-                
-                # Add any additional CLI options from config
-                if 'additional_args' in self.config:
-                    cmd.extend(self.config['additional_args'])
-                
-                # Execute the command
-                self.logger.debug(f"Executing Codex command: {' '.join(cmd)}")
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                
-                if result.returncode == 0:
-                    return result.stdout.strip()
-                else:
-                    self.logger.error(f"Codex CLI error (exit code {result.returncode}): {result.stderr}")
-                    return None
-                    
-            finally:
-                # Clean up temporary file
-                try:
-                    os.unlink(temp_file_path)
-                except OSError:
-                    pass
-                    
         except subprocess.TimeoutExpired:
             self.logger.error("Codex CLI command timed out")
             return None
