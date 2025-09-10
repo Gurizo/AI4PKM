@@ -41,7 +41,7 @@ The following prompts and templates are extensively used within workflows to rep
 ## PKM Applications
 PKM supports following applications
 ### Ad-hoc Rsesarch
-![[(beta) Ad-hoc Research within PKM (ARP)]]
+![[Ad-hoc Research within PKM (ARP)]]
 
 ### Contents Creation
 ![[PKM Writing Workflow.excalidraw.svg]]

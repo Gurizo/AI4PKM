@@ -1,4 +1,4 @@
-'''---
+---
 title: "세컨드 브레인 구축: 최종 입문 가이드"
 source: "https://fortelabs.com/blog/basboverview/"
 author:
