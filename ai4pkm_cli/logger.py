@@ -33,7 +33,7 @@ class Logger:
         self.console = Console() if console_output else None
         
         # Print log file path for user reference
-        print(f"📝 Log file: {os.path.abspath(self.log_file)}")
+        # print(f"📝 Log file: {os.path.abspath(self.log_file)}")
         
         self._ensure_log_file()
         
