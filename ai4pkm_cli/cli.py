@@ -156,8 +156,12 @@ class PKMApp:
             inline_prompt = job.get('inline_prompt', 'N/A')
             description = job.get('description', 'No description')
             cron_expr = job.get('cron', 'N/A')
+            enabled = job.get('enabled', True)
             
-            self.console.print(f"[cyan]{i}.[/cyan] {inline_prompt}")
+            status_color = "green" if enabled else "dim red"
+            status_text = "ENABLED" if enabled else "DISABLED"
+            
+            self.console.print(f"[cyan]{i}.[/cyan] [bold]{inline_prompt}[/bold] [{status_color}]({status_text})[/{status_color}]")
             self.console.print(f"   Schedule: {cron_expr}")
             self.console.print(f"   Description: {description}\n")
         
