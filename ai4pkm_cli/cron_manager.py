@@ -67,6 +67,11 @@ class CronManager:
             try:
                 inline_prompt = job.get('inline_prompt')
                 cron_expr = job.get('cron')
+                enabled = job.get('enabled', True)
+
+                if not enabled:
+                    self.logger.info(f"Skipping disabled job: {job}")
+                    continue
 
                 if not inline_prompt or not cron_expr:
                     self.logger.error(f"Invalid job configuration: {job}")

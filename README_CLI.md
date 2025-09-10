@@ -23,6 +23,16 @@ A powerful command-line interface for automating knowledge management workflows 
 - Python 3.8 or higher
 - Claude Code SDK access
 
+### Install Claude Code SDK
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+### Login to Claude Code (you need API key or pro/max subscription)
+```bash
+claude login
+```
+
 ### Install Dependencies
 
 ```bash
