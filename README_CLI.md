@@ -39,23 +39,39 @@ After installation, the CLI will be available as the `ai4pkm` command.
 
 ## 🎯 Usage
 
-The CLI operates in three main modes:
+The CLI operates in several modes:
 
-### 1. Interactive Mode (Default)
+### 1. Default Mode (Information Display)
 
-Run the CLI without arguments to start continuous mode with cron job scheduling:
+Run the CLI without arguments to see current configuration and usage instructions:
 
 ```bash
 ai4pkm
 ```
 
 This will:
-- Load and display configured cron jobs
-- Start the cron scheduler 
-- Show live logs
+- Show current agent configuration
+- Display scheduled cron jobs
+- List common commands and shortcuts
+- Provide quick usage reference
+
+### 2. Continuous Cron Mode
+
+Start the cron job scheduler for automated task execution:
+
+```bash
+ai4pkm -c
+# or
+ai4pkm --cron
+```
+
+This will:
+- Load and start configured cron jobs
+- Run continuously with live logging
+- Execute scheduled tasks automatically
 - Continue running until stopped with Ctrl+C
 
-### 2. One-time Prompt Execution
+### 3. One-time Prompt Execution
 
 Execute a specific prompt immediately:
 
@@ -79,7 +95,21 @@ ai4pkm -p "custom_prompt"
 3. Partial name matching
 4. Fallback to Adhoc folder
 
-### 3. Cron Job Testing
+**Per-Prompt Agent Override:**
+You can use a specific agent for just one prompt without changing the global configuration:
+
+```bash
+# Use Gemini for this prompt only
+ai4pkm -a g -p "GDR"
+
+# Use Codex for this prompt only  
+ai4pkm -a codex -p "TKC"
+
+# Global agent remains unchanged
+ai4pkm --show-config
+```
+
+### 4. Cron Job Testing
 
 Test a specific cron job interactively:
 
@@ -93,7 +123,66 @@ This will:
 - Show execution time and results
 - Useful for debugging scheduled tasks
 
+### 5. AI Agent Management
+
+The CLI supports multiple AI agents. Manage them using these commands:
+
+```bash
+# List all available agents and their status
+ai4pkm --list-agents
+
+# Show current configuration
+ai4pkm --show-config
+
+# Switch to a different agent (full names)
+ai4pkm --agent claude_code
+ai4pkm --agent gemini_cli
+ai4pkm --agent codex_cli
+
+# Or use convenient shortcuts
+ai4pkm -a c       # Claude
+ai4pkm -a g       # Gemini  
+ai4pkm -a o       # Codex
+
+# Or use full names
+ai4pkm -a claude  # Claude
+ai4pkm -a gemini  # Gemini
+ai4pkm -a codex   # Codex
+```
+
+**Available Agents:**
+- **Claude Code**: Uses Claude Code SDK (default)
+- **Gemini CLI**: Uses Google Gemini CLI
+- **Codex CLI**: Uses OpenAI Codex CLI
+
+The system automatically falls back to available agents if the selected one is not configured.
+
 ## ⚙️ Configuration
+
+### AI Agent Configuration (`_Settings_/ai4pkm_config.json`)
+
+The CLI automatically creates a configuration file to manage AI agent settings:
+
+```json
+{
+  "agent": "claude_code",
+  "claude_code": {
+    "permission_mode": "bypassPermissions"
+  },
+  "gemini_cli": {
+    "command": "gemini"
+  },
+  "codex_cli": {
+    "command": "codex"
+  }
+}
+```
+
+**Configuration Options:**
+- `agent`: Current active agent (claude_code, gemini_cli, codex_cli)  
+- Each agent section contains agent-specific settings
+- CLI commands can be customized for different installations
+- CLI-based agents (Gemini, Codex) use their respective default models
 
 ### Cron Jobs (`cron.json`)
 
@@ -202,6 +291,19 @@ Time range: {start_time} to {end_time}
    - Check log output for errors
    - Test individual jobs with `-t` flag
 
+5. **Agent not available**
+   - Use `--list-agents` to check agent status
+   - For Gemini CLI: Install Google AI CLI tools
+   - For Codex CLI: Install OpenAI CLI tools
+   - System automatically falls back to available agents
+
+6. **Agent switching not working**
+   - Check `_Settings_/ai4pkm_config.json` permissions
+   - Verify agent type spelling (claude_code, gemini_cli, codex_cli)
+   - Use shortcuts: `-a c/claude`, `-a g/gemini`, `-a o/codex`
+   - Use `--show-config` to verify current settings
+   - Per-prompt agents: `ai4pkm -a g -p "prompt"` doesn't change global config
+
 ### Debug Mode
 
 For detailed debugging, check the logs in `_Settings_/Logs/` or run with verbose console output.
@@ -214,8 +316,11 @@ For detailed debugging, check the logs in `_Settings_/Logs/` or run with verbose
 # Set up daily roundup at 9 PM
 echo '[{"inline_prompt": "DIR for today", "cron": "0 21 * * *", "description": "Daily roundup"}]' > cron.json
 
-# Start the scheduler
+# Check the configuration
 ai4pkm
+
+# Start the scheduler
+ai4pkm -c
 
 # Test the job manually
 ai4pkm -t
@@ -232,6 +337,30 @@ ai4pkm -p "generate_report"
 
 # Run adhoc analysis
 ai4pkm -p "analyze_recent_notes"
+```
+
+### Agent Management
+
+```bash
+# Check available agents
+ai4pkm --list-agents
+
+# Switch to Gemini for better multilingual support
+ai4pkm -a g
+
+# Use Codex for coding tasks  
+ai4pkm -a o
+
+# Show current agent configuration
+ai4pkm --show-config
+
+# Run a prompt with specific agent (shortcuts work too)
+ai4pkm -a c -p "GDR"
+
+# Use different agents for different tasks
+ai4pkm -a gemini -p "translate_document"    # Gemini for multilingual tasks
+ai4pkm -a codex -p "generate_code"          # Codex for coding tasks
+ai4pkm -a claude -p "analyze_content"       # Claude for analysis
 ```
 
 ## 🤝 Contributing

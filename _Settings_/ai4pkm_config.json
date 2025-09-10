@@ -1,0 +1,12 @@
+{
+  "agent": "gemini_cli",
+  "claude_code": {
+    "permission_mode": "bypassPermissions"
+  },
+  "gemini_cli": {
+    "command": "gemini"
+  },
+  "codex_cli": {
+    "command": "codex"
+  }
+}
