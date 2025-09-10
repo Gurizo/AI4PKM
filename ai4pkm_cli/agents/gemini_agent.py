@@ -54,18 +54,18 @@ class GeminiAgent(BaseAgent):
     def _execute_gemini_prompt(self, prompt_content: str) -> Optional[str]:
         """Execute the prompt using Gemini CLI."""
         try:
-            # Build the command using -p/--prompt for non-interactive mode
+            # Build the command using -p/--prompt for non-interactive mode with quoted prompt
             cmd = [
                 self.command,
-                '--prompt', prompt_content
+                '--prompt', f'"{prompt_content}"'
             ]
             
             # Add any additional CLI options from config
             if 'additional_args' in self.config:
                 cmd.extend(self.config['additional_args'])
             
-            # Execute the command
-            self.logger.debug(f"Executing Gemini command: {' '.join(cmd[:3])}... (prompt truncated)")
+            # Execute the command - show full command
+            self.logger.debug(f"Executing Gemini command: {' '.join(cmd)}")
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             
             if result.returncode == 0:

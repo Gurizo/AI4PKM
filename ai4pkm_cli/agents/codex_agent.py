@@ -53,19 +53,19 @@ class CodexAgent(BaseAgent):
     def _execute_codex_prompt(self, prompt_content: str) -> Optional[str]:
         """Execute the prompt using Codex CLI."""
         try:
-            # Build the command - use exec for non-interactive mode with direct prompt
+            # Build the command - use exec for non-interactive mode with quoted prompt
             cmd = [
                 self.command,
                 'exec',
-                prompt_content
+                f'"{prompt_content}"'
             ]
             
             # Add any additional CLI options from config
             if 'additional_args' in self.config:
                 cmd.extend(self.config['additional_args'])
             
-            # Execute the command
-            self.logger.debug(f"Executing Codex command: {' '.join(cmd[:3])}... (prompt truncated)")
+            # Execute the command - show full command
+            self.logger.debug(f"Executing Codex command: {' '.join(cmd)}")
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             
             if result.returncode == 0:
