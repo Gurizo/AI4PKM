@@ -135,18 +135,12 @@ class PKMApp:
             report_generator = ReportGenerator(self.logger, execution_agent)
             report_generator.generate_interactive_report()
         else:
-            # First try to find matching prompt in Prompts folder
-            matched_prompt = self.find_matching_prompt(prompt)
-            if matched_prompt:
-                result = execution_agent.run_prompt(prompt_name=matched_prompt)
-                if result and result[0]:  # Check if result is not None and has content
-                    self.logger.info(result[0])
+            # Execute the prompt directly as arbitrary text
+            result = execution_agent.run_prompt(inline_prompt=prompt)
+            if result and result[0]:  # Check if result is not None and has content
+                self.logger.info(result[0])
             else:
-                # Fallback to Adhoc folder (original behavior)
-                self.logger.info(f"Falling back to Adhoc folder for: {prompt}")
-                result = execution_agent.run_prompt(prompt_name=f"Adhoc/{prompt.lower()}")
-                if result and result[0]:  # Check if result is not None and has content
-                    self.logger.info(result[0])
+                self.logger.error("No response received from agent")
     
     def test_cron_job(self):
         """Test a specific cron job interactively."""

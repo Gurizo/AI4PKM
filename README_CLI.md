@@ -73,37 +73,39 @@ This will:
 
 ### 3. One-time Prompt Execution
 
-Execute a specific prompt immediately:
+Execute any prompt immediately by passing it directly to the AI agent:
 
 ```bash
-# Run a named prompt from _Settings_/Prompts/
-ai4pkm -p "Generate Daily Roundup (GDR)"
+# Execute any arbitrary prompt
+ai4pkm -p "What is machine learning?"
 
-# Run using shortcut code
-ai4pkm -p "GDR"
+# Multi-line or complex prompts
+ai4pkm -p "Analyze this data and provide insights: [data here]"
 
 # Run special report generator
 ai4pkm -p "generate_report"
 
-# Run an adhoc prompt
-ai4pkm -p "custom_prompt"
+# Creative tasks
+ai4pkm -p "Write a haiku about programming"
 ```
 
-**Named Prompt Resolution:**
-1. Exact match (case insensitive)
-2. Shortcut code matching (e.g., "GDR" matches "Generate Daily Roundup (GDR)")
-3. Partial name matching
-4. Fallback to Adhoc folder
+**Direct Prompt Execution:**
+- All prompts (except "generate_report") are sent directly to the AI agent
+- No file system lookup or template matching required
+- Simple, fast, and flexible for any use case
 
 **Per-Prompt Agent Override:**
 You can use a specific agent for just one prompt without changing the global configuration:
 
 ```bash
 # Use Gemini for this prompt only
-ai4pkm -a g -p "GDR"
+ai4pkm -a g -p "Translate this to Korean: Hello world"
 
-# Use Codex for this prompt only  
-ai4pkm -a codex -p "TKC"
+# Use Codex for coding tasks  
+ai4pkm -a codex -p "Write a Python function to sort a list"
+
+# Use Claude for analysis
+ai4pkm -a c -p "Analyze the pros and cons of remote work"
 
 # Global agent remains unchanged
 ai4pkm --show-config
@@ -329,14 +331,20 @@ ai4pkm -t
 ### Custom Prompt Execution
 
 ```bash
-# Run topic knowledge creation
-ai4pkm -p "TKC"
+# Ask questions directly
+ai4pkm -p "What are the benefits of using a PKM system?"
+
+# Get code help
+ai4pkm -a codex -p "Write a Python script to parse JSON files"
+
+# Content analysis
+ai4pkm -a claude -p "Summarize the key points of this text: [your text]"
 
 # Generate a custom report
 ai4pkm -p "generate_report"
 
-# Run adhoc analysis
-ai4pkm -p "analyze_recent_notes"
+# Creative writing
+ai4pkm -p "Write a brief introduction to knowledge management"
 ```
 
 ### Agent Management
