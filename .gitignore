@@ -1,11 +1,5 @@
 logs.txt
 *.log
 
-Journal/
-Reports/
-Ingest/
-AI/
-Topics/
-
 __pycache__
 *.egg-info

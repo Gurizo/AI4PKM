@@ -34,6 +34,9 @@ This vault is optimized for AI integration with:
 - Codex CLI configuration in [[AGENTS]]
 - Cursor IDE rules in `.cursor/rules/`
 
+## AI4PKM CLI
+For automated execution, use [[README_CLI|CLI Tool]] provided as python package.
+
 ## Community Plugins
 The following plugins are recommended and pre-configured:
 - Calendar - Visual calendar interface

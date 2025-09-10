@@ -1,8 +1,20 @@
 {
   "recentFiles": [
     {
+      "basename": "Generate Daily Roundup (GDR)",
+      "path": "_Settings_/Prompts/Generate Daily Roundup (GDR).md"
+    },
+    {
       "basename": "README",
       "path": "README.md"
+    },
+    {
+      "basename": "README_CLI",
+      "path": "README_CLI.md"
+    },
+    {
+      "basename": "2025-09-09 제텔카스텐의 네 가지 기본 원칙",
+      "path": "Ingest/Clippings/2025-09-09 제텔카스텐의 네 가지 기본 원칙.md"
     },
     {
       "basename": "README_INIT_VAULT",
@@ -187,18 +199,6 @@
     {
       "basename": "CLAUDE",
       "path": "CLAUDE.md"
-    },
-    {
-      "basename": "2025-08-31 롯데콘서트홀 클래식 레볼루션 2025 3탄  양인모와 레오디나스 카바코스의 바흐 바이ᄋ",
-      "path": "Ingest/Clippings/2025-08-31 롯데콘서트홀 클래식 레볼루션 2025 3탄  양인모와 레오디나스 카바코스의 바흐 바이ᄋ.md"
-    },
-    {
-      "basename": "n8n",
-      "path": "Topics/Technology/n8n.md"
-    },
-    {
-      "basename": "Topic Knowledge Creation (TKC)",
-      "path": "_Settings_/Prompts/Topic Knowledge Creation (TKC).md"
     }
   ],
   "omittedPaths": [],
