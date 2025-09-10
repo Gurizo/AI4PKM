@@ -9,23 +9,26 @@ class Config:
     """Handles configuration for AI4PKM CLI."""
     
     DEFAULT_CONFIG = {
-        "agent": "claude_code",  # Options: claude_code, gemini_cli, codex_cli
-        "claude_code": {
-            "permission_mode": "bypassPermissions"
+        "default-agent": "claude_code",  # Options: claude_code, gemini_cli, codex_cli
+        "agents-config": {
+            "claude_code": {
+                "permission_mode": "bypassPermissions"
+            },
+            "gemini_cli": {
+                "command": "gemini"  # CLI command name
+            },
+            "codex_cli": {
+                "command": "codex"  # CLI command name
+            }
         },
-        "gemini_cli": {
-            "command": "gemini"  # CLI command name
-        },
-        "codex_cli": {
-            "command": "codex"  # CLI command name
-        }
+        "cron_jobs": []
     }
     
     def __init__(self, config_file=None):
         """Initialize configuration."""
         if config_file is None:
             # Use current working directory for config file
-            self.config_file = os.path.join(os.getcwd(), "_Settings_", "ai4pkm_config.json")
+            self.config_file = os.path.join(os.getcwd(), "ai4pkm_cli.json")
         else:
             self.config_file = config_file
             
@@ -81,17 +84,21 @@ class Config:
         self._save_config(self.config)
         
     def get_agent(self) -> str:
-        """Get current agent selection."""
-        return self.get('agent', 'claude_code')
+        """Get current default agent selection."""
+        return self.get('default-agent', 'claude_code')
         
     def set_agent(self, agent: str):
-        """Set current agent and save."""
+        """Set current default agent and save."""
         if agent not in ['claude_code', 'gemini_cli', 'codex_cli']:
             raise ValueError(f"Invalid agent: {agent}. Must be one of: claude_code, gemini_cli, codex_cli")
-        self.set('agent', agent)
+        self.set('default-agent', agent)
+        
+    def get_cron_jobs(self) -> list:
+        """Get cron jobs from configuration."""
+        return self.get('cron_jobs', [])
         
     def get_agent_config(self, agent: str = None) -> Dict[str, Any]:
         """Get configuration for specific agent."""
         if agent is None:
             agent = self.get_agent()
-        return self.get(agent, {})
+        return self.get(f'agents-config.{agent}', {})

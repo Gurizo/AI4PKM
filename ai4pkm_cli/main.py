@@ -17,7 +17,7 @@ def signal_handler(sig, frame):
 @click.option('-p', '--prompt', help='Execute a one-time prompt')
 @click.option('-t', '--test', 'test_cron', is_flag=True, help='Test a specific cron job interactively')
 @click.option('-c', '--cron', 'run_cron', is_flag=True, help='Run continuous cron job scheduler')
-@click.option('-a', '--agent', help='Set the AI agent to use (c/claude, g/gemini, o/codex)')
+@click.option('-a', '--agent', help='Override agent for prompt execution (c/claude, g/gemini, o/codex) - only usable with -p')
 @click.option('--list-agents', is_flag=True, help='List available AI agents and their status')
 @click.option('--show-config', is_flag=True, help='Show current configuration')
 def main(prompt, test_cron, run_cron, agent, list_agents, show_config):
@@ -37,8 +37,10 @@ def main(prompt, test_cron, run_cron, agent, list_agents, show_config):
         # Show current configuration
         app.show_config()
     elif agent and not prompt:
-        # Set the global agent (only when no prompt specified)
-        app.set_agent(agent)
+        # Error: agent option can only be used with prompts
+        click.echo("❌ Error: The --agent (-a) option can only be used with --prompt (-p)")
+        click.echo("   Use 'ai4pkm --show-config' to view/change the default agent in ai4pkm_cli.json")
+        sys.exit(1)
     elif prompt:
         # Execute the prompt (with optional agent for this execution only)
         app.execute_prompt(prompt, agent)

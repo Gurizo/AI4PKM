@@ -4,7 +4,6 @@ import os
 import threading
 import time
 import glob
-import json
 from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
@@ -144,21 +143,11 @@ class PKMApp:
     
     def test_cron_job(self):
         """Test a specific cron job interactively."""
-        # Load cron jobs
-        cron_file = "cron.json"
-        if not os.path.exists(cron_file):
-            self.logger.error("No cron.json found. Create one to add cron jobs.")
-            return
-        
-        try:
-            with open(cron_file, 'r') as f:
-                jobs = json.load(f)
-        except Exception as e:
-            self.logger.error(f"Failed to load cron jobs: {e}")
-            return
+        # Load cron jobs from config
+        jobs = self.config.get_cron_jobs()
         
         if not jobs:
-            self.logger.error("No cron jobs found in cron.json")
+            self.logger.error("No cron jobs found in config. Edit ai4pkm_cli.json to add cron jobs.")
             return
         
         # Display available cron jobs
@@ -251,7 +240,7 @@ class PKMApp:
                 inline_prompt = job.get('inline_prompt')
                 self.console.print(f"  • {inline_prompt} - {job['cron']}")
         else:
-            self.console.print("\n[yellow]No cron jobs configured. Create cron.json to add jobs.[/yellow]")
+            self.console.print("\n[yellow]No cron jobs configured. Edit ai4pkm_cli.json to add cron jobs.[/yellow]")
         
         self.console.print("\n" + "="*60)
         self.console.print("[bold]Live Logs:[/bold]")
@@ -269,7 +258,7 @@ class PKMApp:
             self.console.print(f"{current_marker} [cyan]{agent['type']}[/cyan]: {agent['name']} - {agent['status']}")
             
         self.console.print(f"\n[green]Current agent:[/green] {current_agent}")
-        self.console.print(f"[dim]Use --agent <agent_type> to change the current agent[/dim]")
+        self.console.print(f"[dim]Edit ai4pkm_cli.json to change the default-agent[/dim]")
         
     def show_config(self):
         """Show current configuration."""
@@ -376,7 +365,7 @@ class PKMApp:
         self.console.print(f"  [cyan]ai4pkm -c[/cyan]                     Start cron scheduler")
         self.console.print(f"  [cyan]ai4pkm -t[/cyan]                     Test cron jobs")
         self.console.print(f"  [cyan]ai4pkm --list-agents[/cyan]          List available agents")
-        self.console.print(f"  [cyan]ai4pkm -a gemini[/cyan]              Switch default agent")
+        self.console.print(f"  [cyan]ai4pkm --show-config[/cyan]          Show config (edit ai4pkm_cli.json for settings)")
         
         self.console.print(f"\n[bold yellow]Agent Shortcuts:[/bold yellow]")
         self.console.print(f"  [green]c/claude[/green], [green]g/gemini[/green], [green]o/codex[/green]")

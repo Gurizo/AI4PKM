@@ -10,7 +10,7 @@ from .agent_factory import AgentFactory
 
 
 class CronManager:
-    """Manages cron jobs defined in cron.json."""
+    """Manages cron jobs defined in configuration file."""
     
     def __init__(self, logger, default_agent):
         """Initialize cron manager."""
@@ -24,18 +24,12 @@ class CronManager:
         self._load_jobs()
         
     def _load_jobs(self):
-        """Load cron jobs from cron.json."""
-        cron_file = "cron.json"
-        if not os.path.exists(cron_file):
-            self.logger.info("No cron.json found. Create one to add cron jobs.")
-            return
-            
+        """Load cron jobs from configuration file."""
         try:
-            with open(cron_file, 'r') as f:
-                self.jobs = json.load(f)
-            self.logger.info(f"Loaded {len(self.jobs)} cron jobs from {cron_file}")
+            self.jobs = self.config.get_cron_jobs()
+            self.logger.info(f"Loaded {len(self.jobs)} cron jobs from config")
         except Exception as e:
-            self.logger.error(f"Failed to load cron jobs: {e}")
+            self.logger.error(f"Failed to load cron jobs from config: {e}")
             self.jobs = []
             
     def get_jobs(self):
