@@ -11,6 +11,10 @@
       "command": "codex"
     }
   },
+  "photo_processing": {
+    "source_folder": "Photostream/",
+    "destination_folder": "Ingest/Photolog/Snap/"
+  },
   "cron_jobs": [
     {
       "inline_prompt": "CKU for hourly run",
