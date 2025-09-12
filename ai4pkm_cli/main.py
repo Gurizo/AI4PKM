@@ -5,7 +5,7 @@ import signal
 import sys
 import click
 from .cli import PKMApp
-
+import logging
 
 def signal_handler(sig, frame):
     """Handle SIGINT (Ctrl+C) gracefully."""
@@ -15,15 +15,22 @@ def signal_handler(sig, frame):
 
 @click.command()
 @click.option('-p', '--prompt', help='Execute a one-time prompt')
+@click.option('-cmd', '--command', help='Execute a one-time command')
 @click.option('-t', '--test', 'test_cron', is_flag=True, help='Test a specific cron job interactively')
 @click.option('-c', '--cron', 'run_cron', is_flag=True, help='Run continuous cron job scheduler')
 @click.option('-a', '--agent', help='Override agent for prompt execution (c/claude, g/gemini, o/codex) - only usable with -p')
+@click.option('-d', '--debug', is_flag=True, help='Enable debug logging')
 @click.option('--list-agents', is_flag=True, help='List available AI agents and their status')
 @click.option('--show-config', is_flag=True, help='Show current configuration')
-def main(prompt, test_cron, run_cron, agent, list_agents, show_config):
+def main(prompt, command, test_cron, run_cron, agent, debug, list_agents, show_config):
     """PKM CLI - Personal Knowledge Management framework."""
     # Set up signal handler for graceful shutdown
     signal.signal(signal.SIGINT, signal_handler)
+    
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
     
     # Initialize the PKM application
     # Suppress default agent logging when using agent override for prompts
@@ -44,6 +51,9 @@ def main(prompt, test_cron, run_cron, agent, list_agents, show_config):
     elif prompt:
         # Execute the prompt (with optional agent for this execution only)
         app.execute_prompt(prompt, agent)
+    elif command:
+        # Execute the command
+        app.execute_command(command)
     elif test_cron:
         # Test a specific cron job
         app.test_cron_job()

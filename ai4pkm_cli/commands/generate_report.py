@@ -8,7 +8,7 @@ from rich.prompt import Prompt
 from ..utils import interactive_select
 
 
-class ReportGenerator:
+class GenerateReport:
     """Handles interactive report generation."""
     
     def __init__(self, logger, agent):

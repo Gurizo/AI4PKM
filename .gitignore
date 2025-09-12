@@ -8,6 +8,7 @@ Reports/
 Ingest/
 AI/
 Topics/
+Photostream/
 
 __pycache__
 *.egg-info

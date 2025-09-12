@@ -7,6 +7,7 @@ from datetime import datetime
 from croniter import croniter
 from .config import Config
 from .agent_factory import AgentFactory
+from .commands.command_runner import CommandRunner
 
 
 class CronManager:
@@ -70,10 +71,14 @@ class CronManager:
         if 0 <= job_id < len(self.jobs):
             job = self.jobs[job_id]
             inline_prompt = job.get('inline_prompt')
+            command = job.get('command')
             agent = self._get_agent_for_job(job)
-            
-            self.logger.info(f"Executing job {job_id}: {inline_prompt} using {agent.get_agent_name()}")
-            return self._run_job_with_agent(inline_prompt, agent)
+            if inline_prompt:
+                self.logger.info(f"Executing inline prompt job {job_id}: {inline_prompt} using {agent.get_agent_name()}")
+                return self._run_job_with_agent(inline_prompt, agent)
+            elif command:
+                self.logger.info(f"Executing command job {job_id}: {command}")
+                return self._run_job_with_command(command, agent)
         else:
             self.logger.error(f"Invalid job ID: {job_id}. Available jobs: 0-{len(self.jobs)-1}")
             return False
@@ -126,14 +131,11 @@ class CronManager:
         for job in self.jobs:
             try:
                 inline_prompt = job.get('inline_prompt')
+                command = job.get('command')
                 cron_expr = job.get('cron')
                 enabled = job.get('enabled', True)
 
-                if not enabled:
-                    self.logger.info(f"Skipping disabled job: {job}")
-                    continue
-
-                if not inline_prompt or not cron_expr:
+                if (not inline_prompt and not command) or (not inline_prompt and not cron_expr):
                     self.logger.error(f"Invalid job configuration: {job}")
                     continue
                     
@@ -144,8 +146,15 @@ class CronManager:
                 # If the previous run time is within the last minute, run the job
                 time_diff = (now - prev_run).total_seconds()
                 if 0 <= time_diff < 60:
+                    if not enabled:
+                        self.logger.info(f"Skipping disabled job: {job}")
+                        continue
+
                     agent = self._get_agent_for_job(job)
-                    self._run_job_with_agent(inline_prompt, agent)
+                    if inline_prompt:
+                        self._run_job_with_agent(inline_prompt, agent)
+                    else:
+                        self._run_job_with_command(command, agent)
                 
             except Exception as e:
                 self.logger.error(f"Error checking job {job}: {e}")
@@ -167,4 +176,20 @@ class CronManager:
                 return False
         except Exception as e:
             self.logger.error(f"Error running prompt: {e}")
+            return False
+
+    def _run_job_with_command(self, command, agent):
+        """Run a single command for a cron job."""
+        self.logger.info(f"Running cron job command: {command}")
+        try:
+            # Run the command
+            result = CommandRunner(self.logger).run_command(command, agent)
+            if result:
+                self.logger.info(f"Command completed successfully")
+                return True
+            else:
+                self.logger.error(f"Command failed")
+                return False
+        except Exception as e:
+            self.logger.error(f"Error running command: {e}")
             return False
