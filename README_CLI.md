@@ -30,7 +30,7 @@ npm install -g @anthropic-ai/claude-code
 
 ### Login to Claude Code (you need API key or pro/max subscription)
 ```bash
-claude login
+claude /login
 ```
 
 ### Install exiftool (to process EXIF metadata from photos)
