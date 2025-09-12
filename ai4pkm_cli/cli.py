@@ -1,7 +1,6 @@
 """Main PKM CLI application class."""
 
 import os
-import threading
 import time
 import glob
 from datetime import datetime
@@ -12,8 +11,7 @@ from .cron_manager import CronManager
 from .logger import Logger
 from .config import Config
 from .agent_factory import AgentFactory
-from .prompt_runners.report_generator import ReportGenerator
-
+from .commands.command_runner import CommandRunner
 
 class PKMApp:
     """Main PKM CLI application."""
@@ -31,6 +29,7 @@ class PKMApp:
             self.logger.info = original_info  # Restore logging
         else:
             self.agent = AgentFactory.create_agent(self.logger, self.config)
+        self.command_runner = CommandRunner(self.logger)
         self.running = False
 
     def find_matching_prompt(self, prompt_query):
@@ -90,9 +89,8 @@ class PKMApp:
         
         return None
 
-    def execute_prompt(self, prompt, agent_override=None):
-        """Execute a one-time prompt with optional agent override."""
-        # Determine which agent to use
+    def _get_execution_agent(self, agent_override=None):
+        """Determine which agent to use for execution."""
         if agent_override:
             # Map shorthand names to full agent types
             agent_shortcuts = {
@@ -127,19 +125,35 @@ class PKMApp:
                 execution_agent = self.agent
         else:
             execution_agent = self.agent
-            
+        return execution_agent
+    
+    def execute_prompt(self, prompt, agent_override=None):
+        """Execute a one-time prompt with optional agent override."""
+        execution_agent = self._get_execution_agent(agent_override)
+
         self.logger.info(f"Executing prompt: {prompt}")
         
-        if prompt.lower() == "generate_report":
-            report_generator = ReportGenerator(self.logger, execution_agent)
-            report_generator.generate_interactive_report()
+        # Execute the prompt directly as arbitrary text
+        result = execution_agent.run_prompt(inline_prompt=prompt)
+        if result and result[0]:  # Check if result is not None and has content
+            self.logger.info(result[0])
         else:
-            # Execute the prompt directly as arbitrary text
-            result = execution_agent.run_prompt(inline_prompt=prompt)
-            if result and result[0]:  # Check if result is not None and has content
-                self.logger.info(result[0])
-            else:
-                self.logger.error("No response received from agent")
+            self.logger.error("No response received from agent")
+
+    def execute_command(self, command, agent_override=None):
+        """Execute a one-time command."""
+        execution_agent = self._get_execution_agent(agent_override)
+       
+        self.logger.info(f"Executing command: {command}")
+
+        # Execute the command
+        result = self.command_runner.run_command(command, execution_agent)
+
+        if result:
+            self.logger.info("Command completed successfully")
+        else:
+            self.logger.error("Command failed")
+
     
     def test_cron_job(self):
         """Test a specific cron job interactively."""
@@ -153,7 +167,8 @@ class PKMApp:
         # Display available cron jobs
         self.console.print("\n[bold blue]Available Cron Jobs:[/bold blue]")
         for i, job in enumerate(jobs, 1):
-            inline_prompt = job.get('inline_prompt', 'N/A')
+            inline_prompt = job.get('inline_prompt')
+            command = job.get('command')
             description = job.get('description', 'No description')
             cron_expr = job.get('cron', 'N/A')
             enabled = job.get('enabled', True)
@@ -161,7 +176,8 @@ class PKMApp:
             status_color = "green" if enabled else "dim red"
             status_text = "ENABLED" if enabled else "DISABLED"
             
-            self.console.print(f"[cyan]{i}.[/cyan] [bold]{inline_prompt}[/bold] [{status_color}]({status_text})[/{status_color}]")
+            title = f'"{inline_prompt}"' if inline_prompt else f"\[{command}]"
+            self.console.print(f"[cyan]{i}.[/cyan] [bold]{title}[/bold] [{status_color}]({status_text})[/{status_color}]")
             self.console.print(f"   Schedule: {cron_expr}")
             self.console.print(f"   Description: {description}\n")
         
@@ -188,28 +204,42 @@ class PKMApp:
         # Run the selected job
         selected_job = jobs[job_index]
         inline_prompt = selected_job.get('inline_prompt')
+        command = selected_job.get('command')
+        title = f'"{inline_prompt}"' if inline_prompt else f"\[{command}]"
         
-        if not inline_prompt:
-            self.logger.error("Selected job has no inline_prompt")
+        if not inline_prompt and not command:
+            self.logger.error("Selected job has no inline_prompt or command")
             return
         
-        self.logger.info(f"Testing cron job: {inline_prompt}")
-        self.console.print(f"\n[green]Running test for:[/green] {inline_prompt}")
+        self.logger.info(f"Testing cron job: {title}")
+        self.console.print(f"\n[green]Running test for:[/green] {title}")
         
         start_time = time.time()
         
         try:
-            result = self.agent.run_prompt(inline_prompt=inline_prompt)
+            if inline_prompt:
+                result = self.agent.run_prompt(inline_prompt=inline_prompt)
+            else:
+                result = self.command_runner.run_command(command, self.agent)
             end_time = time.time()
             execution_time = end_time - start_time
             
-            if result and result[0]:
-                self.logger.info(f"✓ Test completed successfully ({execution_time:.1f}s)")
-                self.console.print(f"\n[green]✓ Test completed successfully[/green]")
-                self.console.print(f"[dim]Execution time: {execution_time:.2f}s | Response: {len(result[0])} chars[/dim]")
+            if inline_prompt:
+                if result and result[0]:
+                    self.logger.info(f"✓ Test completed successfully ({execution_time:.1f}s)")
+                    self.console.print(f"\n[green]✓ Test completed successfully[/green]")
+                    self.console.print(f"[dim]Execution time: {execution_time:.2f}s | Response: {len(result[0])} chars[/dim]")
+                else:
+                    self.logger.error("✗ Test failed - no response received")
+                    self.console.print(f"\n[red]✗ Test failed - no response received[/red]")
             else:
-                self.logger.error("✗ Test failed - no response received")
-                self.console.print(f"\n[red]✗ Test failed - no response received[/red]")
+                if result:
+                    self.logger.info(f"✓ Test completed successfully ({execution_time:.1f}s)")
+                    self.console.print(f"\n[green]✓ Test completed successfully[/green]")
+                    self.console.print(f"[dim]Execution time: {execution_time:.2f}s[/dim]")
+                else:
+                    self.logger.error("✗ Test failed - no response received")
+                    self.console.print(f"\n[red]✗ Test failed - no response received[/red]")
         except Exception as e:
             end_time = time.time()
             execution_time = end_time - start_time
@@ -242,7 +272,9 @@ class PKMApp:
             self.console.print(f"\n[green]Loaded {len(jobs)} cron jobs:[/green]")
             for job in jobs:
                 inline_prompt = job.get('inline_prompt')
-                self.console.print(f"  • {inline_prompt} - {job['cron']}")
+                command = job.get('command')
+                title = f'"{inline_prompt}"' if inline_prompt else f"\[{command}]"
+                self.console.print(f"  • {title} - {job['cron']}")
         else:
             self.console.print("\n[yellow]No cron jobs configured. Edit ai4pkm_cli.json to add cron jobs.[/yellow]")
         

@@ -33,6 +33,11 @@ npm install -g @anthropic-ai/claude-code
 claude login
 ```
 
+### Install exiftool (to process EXIF metadata from photos)
+```bash
+brew install exiftool
+```
+
 ### Install Dependencies
 
 ```bash
@@ -92,15 +97,12 @@ ai4pkm -p "What is machine learning?"
 # Multi-line or complex prompts
 ai4pkm -p "Analyze this data and provide insights: [data here]"
 
-# Run special report generator
-ai4pkm -p "generate_report"
-
 # Creative tasks
 ai4pkm -p "Write a haiku about programming"
 ```
 
 **Direct Prompt Execution:**
-- All prompts (except "generate_report") are sent directly to the AI agent
+- All prompts are sent directly to the AI agent
 - No file system lookup or template matching required
 - Simple, fast, and flexible for any use case
 
@@ -121,7 +123,26 @@ ai4pkm -a c -p "Analyze the pros and cons of remote work"
 ai4pkm --show-config
 ```
 
-### 4. Cron Job Testing
+### 4. One-time Command Execution
+
+Execute pre-defined command
+
+Sync photos from iCloud AI4PKM album to ./Photostream, process each new photo by extracting EXIF metadata, and save jpeg image and metadata in markdown to ./Ingest/Photolog/Snap/ folder.
+
+#### Process Photos
+```bash
+ai4pkm -cmd process_photos
+```
+
+#### Generate Report
+
+Generate one time report using Adhoc/generate_report.md prompt with user inputs. User inputs are start time, end time, name and description of the event.
+
+```bash
+ai4pkm -cmd generate_report
+```
+
+### 5. Cron Job Testing
 
 Test a specific cron job interactively:
 
@@ -135,7 +156,7 @@ This will:
 - Show execution time and results
 - Useful for debugging scheduled tasks
 
-### 5. AI Agent Management
+### 6. AI Agent Management
 
 The CLI supports multiple AI agents. Manage them using these commands:
 
@@ -349,9 +370,6 @@ ai4pkm -a codex -p "Write a Python script to parse JSON files"
 
 # Content analysis
 ai4pkm -a claude -p "Summarize the key points of this text: [your text]"
-
-# Generate a custom report
-ai4pkm -p "generate_report"
 
 # Creative writing
 ai4pkm -p "Write a brief introduction to knowledge management"
