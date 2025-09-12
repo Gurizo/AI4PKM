@@ -29,7 +29,7 @@ class PKMApp:
             self.logger.info = original_info  # Restore logging
         else:
             self.agent = AgentFactory.create_agent(self.logger, self.config)
-        self.command_runner = CommandRunner(self.logger)
+        self.command_runner = CommandRunner(self.logger, self.config)
         self.running = False
 
     def find_matching_prompt(self, prompt_query):
@@ -176,7 +176,7 @@ class PKMApp:
             status_color = "green" if enabled else "dim red"
             status_text = "ENABLED" if enabled else "DISABLED"
             
-            title = f'"{inline_prompt}"' if inline_prompt else f"\[{command}]"
+            title = f'"{inline_prompt}"' if inline_prompt else f"\\[{command}]"
             self.console.print(f"[cyan]{i}.[/cyan] [bold]{title}[/bold] [{status_color}]({status_text})[/{status_color}]")
             self.console.print(f"   Schedule: {cron_expr}")
             self.console.print(f"   Description: {description}\n")
@@ -205,7 +205,7 @@ class PKMApp:
         selected_job = jobs[job_index]
         inline_prompt = selected_job.get('inline_prompt')
         command = selected_job.get('command')
-        title = f'"{inline_prompt}"' if inline_prompt else f"\[{command}]"
+        title = f'"{inline_prompt}"' if inline_prompt else f"\\[{command}]"
         
         if not inline_prompt and not command:
             self.logger.error("Selected job has no inline_prompt or command")
@@ -273,7 +273,7 @@ class PKMApp:
             for job in jobs:
                 inline_prompt = job.get('inline_prompt')
                 command = job.get('command')
-                title = f'"{inline_prompt}"' if inline_prompt else f"\[{command}]"
+                title = f'"{inline_prompt}"' if inline_prompt else f"\\[{command}]"
                 self.console.print(f"  • {title} - {job['cron']}")
         else:
             self.console.print("\n[yellow]No cron jobs configured. Edit ai4pkm_cli.json to add cron jobs.[/yellow]")
