@@ -83,69 +83,79 @@ fi
 # Skip check already done above - proceeding with processing
 
 # Use YYYY-MM-DD format with space separator to match repo convention
-final_md="${DEST_DIR}${photo_date_formatted} ${input_name}.md"
+final_yaml="${DEST_DIR}${photo_date_formatted} ${input_name}.yaml"
 final_jpg="${DEST_DIR}${photo_date_formatted} ${input_name}.jpg"
 
-# --- Metadata file (full markdown) ---
-cat > "$final_md" << EOF
----
+# --- Metadata file (full YAML) ---
+cat > "$final_yaml" << EOF
 original_file: "$input_basename"
 photo_date: "$photo_date"
 photo_time: "$photo_time"
 created: $(date -Iseconds)
----
+processed_on: $(date -Iseconds)
 
-# Photo Metadata: $input_basename
+# Date & Time Information
+datetime:
+  original: "$photo_datetime"
+  date: "$photo_date"
+  time: "$photo_time"
+  formatted: "${photo_date_formatted:-unknown}"
 
-## Date & Time
-- **Original DateTime**: $photo_datetime
-- **Date**: $photo_date
-- **Time**: $photo_time
-- **Date (formatted)**: ${photo_date_formatted:-unknown}
-
-## Location
+# Location Information
+location:
 EOF
 
 if [[ -n "$gps_lat" && -n "$gps_lon" ]]; then
-    cat >> "$final_md" << EOF
-- **GPS Coordinates**: $gps_lat, $gps_lon
-- **Map Link**: [View on Maps](https://maps.apple.com/?q=$gps_lat,$gps_lon)
+    cat >> "$final_yaml" << EOF
+  gps_coordinates: "$gps_lat, $gps_lon"
+  map_link: "https://maps.apple.com/?q=$gps_lat,$gps_lon"
+  available: true
 EOF
 else
-    echo "- **GPS Coordinates**: Not available" >> "$final_md"
+    cat >> "$final_yaml" << EOF
+  gps_coordinates: null
+  map_link: null
+  available: false
+EOF
 fi
 
-cat >> "$final_md" << EOF
+cat >> "$final_yaml" << EOF
 
-## Camera Info
-- **Make**: ${camera_make:-N/A}
-- **Model**: ${camera_model:-N/A}
-- **Lens**: ${lens_model:-N/A}
+# Camera Information
+camera:
+  make: "${camera_make:-N/A}"
+  model: "${camera_model:-N/A}"
+  lens: "${lens_model:-N/A}"
 
-## Settings
-- **Focal Length**: ${focal_length:-N/A}
-- **ISO**: ${iso:-N/A}
-- **Aperture**: ${aperture:-N/A}
-- **Shutter Speed**: ${shutter_speed:-N/A}
+# Camera Settings
+settings:
+  focal_length: "${focal_length:-N/A}"
+  iso: "${iso:-N/A}"
+  aperture: "${aperture:-N/A}"
+  shutter_speed: "${shutter_speed:-N/A}"
 
-## File Info
-- **Original Size**: $image_size
-- **File Size**: $file_size
+# File Information
+file_info:
+  original_size: "$image_size"
+  file_size: "$file_size"
+  target_size_kb: ${TARGET_SIZE_KB}
+  conversion_quality: "${OUTPUT_QUALITY}%"
 
-## Processing Notes
-- Processed on: $(date)
-- Target output size: <${TARGET_SIZE_KB}KB
-- Conversion quality: ${OUTPUT_QUALITY}%
+# Processing Information
+processing:
+  target_output_size: "<${TARGET_SIZE_KB}KB"
+  conversion_quality: "${OUTPUT_QUALITY}%"
+  processed_on: "$(date)"
 
-## Suggested Caption
-_[Add descriptive caption here based on image content]_
-
-## Photolog Integration
-\`\`\`
-Time: $photo_time
-Caption: [Add caption]
-File: ${photo_date_formatted:-YYYY-MM-DD} ${input_name}.jpg
-\`\`\`
+# Content Management
+content:
+  suggested_caption: "[Add descriptive caption here based on image content]"
+  
+# Photolog Integration
+photolog:
+  time: "$photo_time"
+  caption: "[Add caption]"
+  file: "${photo_date_formatted:-YYYY-MM-DD} ${input_name}.jpg"
 EOF
 
 # --- Convert image ---

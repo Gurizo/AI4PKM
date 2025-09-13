@@ -122,7 +122,7 @@ class ProcessPhotos:
                     script_output = result.stdout.strip() if result.stdout else ""
                     if "Skipping: File already exists" in script_output:
                         skipped_count += 1
-                        self.logger.info(f"Skipped (already processed): {basename}")
+                        # Skip logging for already processed files
                     else:
                         processed_count += 1
                         self.logger.info(f"Successfully processed: {basename}")
