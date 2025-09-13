@@ -37,7 +37,7 @@ class ProcessPhotos:
         self.logger.info(f"Albums to process: {albums}")
         self.logger.info(f"Looking back {days} days")
 
-        # Export photos using AppleScript
+        # Export photos using AppleScript - process each album
         try:
             # Get the script path relative to the package root
             script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "export_photos.applescript")
@@ -48,21 +48,25 @@ class ProcessPhotos:
                 return
             
             self.logger.info("Exporting photos from Photos app...")
-            result = subprocess.run(
-                ["osascript", script_path, albums[0], source_folder, str(days)], 
-                capture_output=True, text=True, check=True
-            )
             
-            # Log AppleScript output for debugging
-            if result.stdout:
-                for line in result.stdout.strip().split('\n'):
-                    if line.strip():
-                        self.logger.info(f"AppleScript: {line.strip()}")
-                        
-            self.logger.info("Photo export completed successfully")
+            # Process each album in the list
+            for album in albums:
+                self.logger.info(f"Processing album: {album}")
+                result = subprocess.run(
+                    ["osascript", script_path, album, source_folder, str(days)], 
+                    capture_output=True, text=True, check=True
+                )
+                
+                # Log AppleScript output for debugging
+                if result.stdout:
+                    for line in result.stdout.strip().split('\n'):
+                        if line.strip():
+                            self.logger.info(f"AppleScript ({album}): {line.strip()}")
+                            
+            self.logger.info("Photo export completed successfully for all albums")
             
         except subprocess.CalledProcessError as e:
-            self.logger.error(f"AppleScript execution failed: {e}")
+            self.logger.error(f"AppleScript execution failed for album {album}: {e}")
             self.logger.error(f"Error output: {e.stderr}")
             return
         except Exception as e:
