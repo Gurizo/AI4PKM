@@ -42,12 +42,8 @@ fi
 
 mkdir -p "$DEST_DIR"
 
-# --- Early skip check (by filename base) ---
-final_base="${DEST_DIR}${input_name}"
-# check if any file exists whose name starts with final base in DEST_DIR
-if ls "${final_base}"* >/dev/null 2>&1; then
-    exit 0
-fi
+# --- Early skip check needs to be done after EXIF extraction for date-first naming ---
+# This will be moved after we get the photo date
 
 # --- Extract EXIF ---
 datetime_original=$(exiftool -DateTimeOriginal -d "%Y-%m-%d %H:%M:%S" -s3 "$input_file" 2>/dev/null || echo "")
@@ -72,16 +68,23 @@ fi
 if [[ -z "$photo_datetime" ]]; then
     photo_date="unknown"
     photo_time="unknown"
-    photo_date_compact="$input_name"
+    photo_date_formatted="unknown"
 else
     photo_date="${photo_datetime%% *}"
     photo_time="${photo_datetime##* }"
-    photo_date_compact="${photo_date//-/}"
+    photo_date_formatted="${photo_date}"  # Keep YYYY-MM-DD format
 fi
 
-# Replace to EXIF-derived basename if possible
-final_md="${final_base}_${photo_date_compact}.md"
-final_jpg="${final_base}_${photo_date_compact}.jpg"
+# --- Skip check with new YYYY-MM-DD naming ---
+# Check if files with this date+name combination already exist
+date_name_pattern="${DEST_DIR}${photo_date_formatted} ${input_name}"
+if ls "${date_name_pattern}"* >/dev/null 2>&1; then
+    exit 0
+fi
+
+# Use YYYY-MM-DD format with space separator to match repo convention
+final_md="${DEST_DIR}${photo_date_formatted} ${input_name}.md"
+final_jpg="${DEST_DIR}${photo_date_formatted} ${input_name}.jpg"
 
 # --- Metadata file (full markdown) ---
 cat > "$final_md" << EOF
@@ -98,7 +101,7 @@ created: $(date -Iseconds)
 - **Original DateTime**: $photo_datetime
 - **Date**: $photo_date
 - **Time**: $photo_time
-- **Date (compact)**: ${photo_date_compact:-unknown}
+- **Date (formatted)**: ${photo_date_formatted:-unknown}
 
 ## Location
 EOF
@@ -141,7 +144,7 @@ _[Add descriptive caption here based on image content]_
 \`\`\`
 Time: $photo_time
 Caption: [Add caption]
-File: ${photo_date_compact:-YYYYMMDD} [caption].jpg
+File: ${photo_date_formatted:-YYYY-MM-DD} ${input_name}.jpg
 \`\`\`
 EOF
 
