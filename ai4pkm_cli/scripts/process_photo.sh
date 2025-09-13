@@ -77,8 +77,10 @@ fi
 
 # --- Skip check with new YYYY-MM-DD naming ---
 # Check if files with this date+name combination already exist
-date_name_pattern="${DEST_DIR}${photo_date_formatted} ${input_name}"
-if ls "${date_name_pattern}"* >/dev/null 2>&1; then
+# Use find to handle spaces in filenames properly
+existing_files=$(find "$DEST_DIR" -name "${photo_date_formatted} ${input_name}.*" -print -quit)
+if [[ -n "$existing_files" ]]; then
+    echo "Skipping: File already exists - $existing_files"
     exit 0
 fi
 
