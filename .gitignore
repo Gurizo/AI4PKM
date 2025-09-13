@@ -19,3 +19,6 @@ Ingest/Photolog/Processed/
 __pycache__
 *.egg-info
 *.pyc
+
+# IDE workspace files
+workspace.json
