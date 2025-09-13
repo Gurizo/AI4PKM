@@ -24,7 +24,7 @@ class Config:
         "photo_processing": {
             "source_folder": "Ingest/Photolog/Original/",
             "destination_folder": "Ingest/Photolog/Processed/",
-            "albums": ["iPhone Smart Album"],
+            "albums": ["AI4PKM"],
             "days": 7
         },
         "cron_jobs": []
@@ -114,7 +114,7 @@ class Config:
         return self.get('photo_processing', {
             'source_folder': 'Ingest/Photolog/Original/',
             'destination_folder': 'Ingest/Photolog/Processed/',
-            'albums': ['iPhone Smart Album'],
+            'albums': ['AI4PKM'],
             'days': 7
         })
         
@@ -128,7 +128,7 @@ class Config:
     
     def get_photo_albums(self) -> list:
         """Get photo processing album names."""
-        return self.get('photo_processing.albums', ['iPhone Smart Album'])
+        return self.get('photo_processing.albums', ['AI4PKM'])
     
     def get_photo_days(self) -> int:
         """Get number of days to look back for photos."""

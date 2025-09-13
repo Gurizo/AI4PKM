@@ -28,7 +28,7 @@ class ProcessPhotos:
             # Fallback to hardcoded paths if no config
             source_folder = "Ingest/Photolog/Original/"
             destination_folder = "Ingest/Photolog/Processed/"
-            albums = ["iPhone Smart Album"]
+            albums = ["AI4PKM"]
             days = 7
 
         self.logger.info(
