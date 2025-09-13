@@ -52,6 +52,13 @@ class ProcessPhotos:
                 ["osascript", script_path, albums[0], source_folder, str(days)], 
                 capture_output=True, text=True, check=True
             )
+            
+            # Log AppleScript output for debugging
+            if result.stdout:
+                for line in result.stdout.strip().split('\n'):
+                    if line.strip():
+                        self.logger.info(f"AppleScript: {line.strip()}")
+                        
             self.logger.info("Photo export completed successfully")
             
         except subprocess.CalledProcessError as e:

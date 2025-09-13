@@ -22,8 +22,10 @@ tell application "Photos"
 	
 	set allItemsToExport to {}
 	
-	-- Calculate cutoff date (daysBack days ago)
+	-- Calculate cutoff date (start of day, daysBack days ago)
 	set cutoffDate to (current date) - (daysBack * days)
+	-- Set time to start of day (00:00:00)
+	set time of cutoffDate to 0
 	log "Looking for photos newer than: " & cutoffDate
 	
 	-- Find the album
@@ -32,11 +34,25 @@ tell application "Photos"
 		set a to item 1 of albs
 		set allItems to media items of a
 		
+		-- Count total photos for logging
+		set totalPhotos to count of allItems
+		set photosInRange to 0
+		set photosSkipped to 0
+		log "Total photos in album: " & totalPhotos
+		
 		-- Loop through every photo in the album
 		repeat with anItem in allItems
 			-- Check if photo is within date range
-			set photoDate to date of anItem
+			-- Try to get the most appropriate date (when photo was taken)
+			try
+				set photoDate to date of anItem
+			on error
+				set photoDate to modification date of anItem
+			end try
+			set photoName to name of anItem
+			
 			if photoDate ≥ cutoffDate then
+				set photosInRange to photosInRange + 1
 				-- Skip if it's a movie (so Live Photos won't export the .mov part)
 				if (class of anItem as string) is not "movie" then
 					set itemFilename to filename of anItem
@@ -46,10 +62,18 @@ tell application "Photos"
 					-- Only export if not already present
 					if existingFiles does not contain baseName then
 						set end of allItemsToExport to anItem
+						log "Will export: " & photoName & " (taken: " & photoDate & ")"
+					else
+						set photosSkipped to photosSkipped + 1
+						log "Already exists: " & photoName & " (taken: " & photoDate & ")"
 					end if
 				end if
+			else
+				log "Too old: " & photoName & " (taken: " & photoDate & ")"
 			end if
 		end repeat
+		
+		log "Photos in date range: " & photosInRange & " out of " & totalPhotos
 	end if
 	
 	-- Export new items (images only)
