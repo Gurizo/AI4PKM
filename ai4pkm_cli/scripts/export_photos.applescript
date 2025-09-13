@@ -64,7 +64,7 @@ tell application "Photos"
 					set baseName to my removeExtension(itemFilename)
 					
 					-- Only export if not already present
-					if existingFiles does not contain baseName then
+					if existingFiles = "" or existingFiles does not contain baseName then
 						set end of allItemsToExport to anItem
 						log "Will export: " & photoName & " (taken: " & photoDate & ")"
 					else
