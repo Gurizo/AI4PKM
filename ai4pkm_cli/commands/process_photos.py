@@ -117,8 +117,22 @@ class ProcessPhotos:
                         [script_path, file, destination_folder],
                         capture_output=True, text=True, check=True
                     )
-                    processed_count += 1
-                    self.logger.debug(f"Successfully processed: {basename}")
+                    
+                    # Check if shell script actually processed or skipped
+                    script_output = result.stdout.strip() if result.stdout else ""
+                    if "Skipping: File already exists" in script_output:
+                        skipped_count += 1
+                        self.logger.info(f"Skipped (already processed): {basename}")
+                    else:
+                        processed_count += 1
+                        self.logger.info(f"Successfully processed: {basename}")
+                    
+                    # Log shell script output for debugging
+                    if script_output:
+                        for line in script_output.split('\n'):
+                            if line.strip():
+                                self.logger.debug(f"Shell script: {line.strip()}")
+                                
                 except subprocess.CalledProcessError as e:
                     self.logger.error(f"Failed to process {basename}: {e}")
                     self.logger.error(f"Error output: {e.stderr}")
