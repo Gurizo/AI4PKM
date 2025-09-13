@@ -109,7 +109,7 @@ if [[ -n "$gps_lat" && -n "$gps_lon" ]]; then
 - **Map Link**: [View on Maps](https://maps.apple.com/?q=$gps_lat,$gps_lon)
 EOF
 else
-    echo "- **GPS Coordinates**: Not available" >> "$metadata_file"
+    echo "- **GPS Coordinates**: Not available" >> "$final_md"
 fi
 
 cat >> "$final_md" << EOF

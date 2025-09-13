@@ -18,25 +18,49 @@ class ProcessPhotos:
         import glob
         import os
 
-        # Get configurable paths
+        # Get configurable paths and settings
         if self.config:
             source_folder = self.config.get_photo_source_folder()
             destination_folder = self.config.get_photo_destination_folder()
+            albums = self.config.get_photo_albums()
+            days = self.config.get_photo_days()
         else:
             # Fallback to hardcoded paths if no config
-            source_folder = "Photostream/"
-            destination_folder = "Ingest/Photolog/Snap/"
+            source_folder = "Ingest/Photolog/Original/"
+            destination_folder = "Ingest/Photolog/Processed/"
+            albums = ["iPhone Smart Album"]
+            days = 7
 
         self.logger.info(
             f"Processing photos from: {source_folder} -> {destination_folder}"
         )
+        self.logger.info(f"Albums to process: {albums}")
+        self.logger.info(f"Looking back {days} days")
 
+        # Export photos using AppleScript
         try:
-            subprocess.run(
-                ["osascript", "_Settings_/Tools/export_photos.applescript"], check=True
+            # Get the script path relative to the package root
+            script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "export_photos.applescript")
+            script_path = os.path.abspath(script_path)
+            
+            if not os.path.exists(script_path):
+                self.logger.error(f"AppleScript not found: {script_path}")
+                return
+            
+            self.logger.info("Exporting photos from Photos app...")
+            result = subprocess.run(
+                ["osascript", script_path, albums[0], source_folder], 
+                capture_output=True, text=True, check=True
             )
+            self.logger.info("Photo export completed successfully")
+            
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"AppleScript execution failed: {e}")
+            self.logger.error(f"Error output: {e.stderr}")
+            return
         except Exception as e:
             self.logger.error(f"Error exporting photos: {e}")
+            return
 
         try:
             # Ensure destination directory exists
@@ -68,13 +92,26 @@ class ProcessPhotos:
                     skipped_count += 1
                     continue
 
+                # Get the processing script path
+                script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "process_photo.sh")
+                script_path = os.path.abspath(script_path)
+                
+                if not os.path.exists(script_path):
+                    self.logger.error(f"Processing script not found: {script_path}")
+                    continue
+                
                 self.logger.info(f"Processing: {basename}")
-                subprocess.run(
-                    ["_Settings_/Tools/process_photo.sh", file, destination_folder],
-                    check=True,
-                )
-                processed_count += 1
-                processed_basenames.add(basename_no_ext)
+                try:
+                    result = subprocess.run(
+                        [script_path, file, destination_folder],
+                        capture_output=True, text=True, check=True
+                    )
+                    processed_count += 1
+                    self.logger.debug(f"Successfully processed: {basename}")
+                except subprocess.CalledProcessError as e:
+                    self.logger.error(f"Failed to process {basename}: {e}")
+                    self.logger.error(f"Error output: {e.stderr}")
+                    continue
 
             self.logger.info(
                 f"Photo processing completed: {processed_count} processed, {skipped_count} skipped"

@@ -1,7 +1,14 @@
-set albumName to "AI4PKM"
-
--- Create folder and resolve absolute path
-set destPOSIX to (do shell script "mkdir -p ./Photostream && cd ./Photostream && pwd")
+-- Get arguments from command line
+on run argv
+	if (count of argv) < 2 then
+		error "Usage: osascript export_photos.applescript <album_name> <destination_folder>"
+	end if
+	
+	set albumName to item 1 of argv
+	set destFolder to item 2 of argv
+	
+	-- Create folder and resolve absolute path
+	set destPOSIX to (do shell script "mkdir -p " & quoted form of destFolder & " && cd " & quoted form of destFolder & " && pwd")
 
 tell application "Photos"
 	
@@ -39,8 +46,13 @@ tell application "Photos"
 	-- Export new items (images only)
 	if (count of allItemsToExport) > 0 then
 		export allItemsToExport to (POSIX file destPOSIX as alias) with using originals
+		log "Exported " & (count of allItemsToExport) & " new photos from album '" & albumName & "'"
+	else
+		log "No new photos to export from album '" & albumName & "'"
 	end if
 end tell
+
+end run
 
 -- Helper function: remove extension
 on removeExtension(fileName)
