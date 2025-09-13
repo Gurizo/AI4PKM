@@ -42,8 +42,13 @@ fi
 
 mkdir -p "$DEST_DIR"
 
-# --- Early skip check needs to be done after EXIF extraction for date-first naming ---
-# This will be moved after we get the photo date
+# --- Quick pre-check: Skip if ANY processed version exists ---
+# This avoids expensive exiftool call when files are already processed
+quick_check=$(find "$DEST_DIR" -name "*${input_name}.*" -print -quit 2>/dev/null)
+if [[ -n "$quick_check" ]]; then
+    echo "Skipping: File already exists - $quick_check"
+    exit 0
+fi
 
 # --- Extract EXIF ---
 datetime_original=$(exiftool -DateTimeOriginal -d "%Y-%m-%d %H:%M:%S" -s3 "$input_file" 2>/dev/null || echo "")
@@ -75,14 +80,7 @@ else
     photo_date_formatted="${photo_date}"  # Keep YYYY-MM-DD format
 fi
 
-# --- Skip check with new YYYY-MM-DD naming ---
-# Check if files with this date+name combination already exist
-# Use find to handle spaces in filenames properly
-existing_files=$(find "$DEST_DIR" -name "${photo_date_formatted} ${input_name}.*" -print -quit)
-if [[ -n "$existing_files" ]]; then
-    echo "Skipping: File already exists - $existing_files"
-    exit 0
-fi
+# Skip check already done above - proceeding with processing
 
 # Use YYYY-MM-DD format with space separator to match repo convention
 final_md="${DEST_DIR}${photo_date_formatted} ${input_name}.md"
