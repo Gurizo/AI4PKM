@@ -30,9 +30,13 @@ tell application "Photos"
 	
 	-- Find the album
 	set albs to (every album whose name is albumName)
+	log "Found " & (count of albs) & " albums matching '" & albumName & "'"
+	
 	if (count of albs) > 0 then
 		set a to item 1 of albs
+		log "Using album: " & (name of a)
 		set allItems to media items of a
+		log "Album contains " & (count of allItems) & " media items"
 		
 		-- Count total photos for logging
 		set totalPhotos to count of allItems
@@ -74,6 +78,13 @@ tell application "Photos"
 		end repeat
 		
 		log "Photos in date range: " & photosInRange & " out of " & totalPhotos
+	else
+		log "Album '" & albumName & "' not found!"
+		log "Available albums:"
+		set allAlbums to every album
+		repeat with anAlbum in allAlbums
+			log "  - " & (name of anAlbum)
+		end repeat
 	end if
 	
 	-- Export new items (images only)

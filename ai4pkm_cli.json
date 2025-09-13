@@ -14,7 +14,7 @@
   "photo_processing": {
     "source_folder": "Ingest/Photolog/Original/",
     "destination_folder": "Ingest/Photolog/Processed/",
-    "albums": ["AI4PKM"],
+    "albums": ["iPhone Smart Album"],
     "days": 7
   },
   "cron_jobs": [
