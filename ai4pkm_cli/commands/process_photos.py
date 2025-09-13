@@ -49,7 +49,7 @@ class ProcessPhotos:
             
             self.logger.info("Exporting photos from Photos app...")
             result = subprocess.run(
-                ["osascript", script_path, albums[0], source_folder], 
+                ["osascript", script_path, albums[0], source_folder, str(days)], 
                 capture_output=True, text=True, check=True
             )
             self.logger.info("Photo export completed successfully")
