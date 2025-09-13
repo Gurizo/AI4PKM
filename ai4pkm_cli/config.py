@@ -21,6 +21,10 @@ class Config:
                 "command": "codex"  # CLI command name
             }
         },
+        "photo_processing": {
+            "source_folder": "Photostream/",
+            "destination_folder": "Ingest/Photolog/Snap/"
+        },
         "cron_jobs": []
     }
     
@@ -102,3 +106,18 @@ class Config:
         if agent is None:
             agent = self.get_agent()
         return self.get(f'agents-config.{agent}', {})
+        
+    def get_photo_processing_config(self) -> Dict[str, str]:
+        """Get photo processing configuration."""
+        return self.get('photo_processing', {
+            'source_folder': 'Photostream/',
+            'destination_folder': 'Ingest/Photolog/Snap/'
+        })
+        
+    def get_photo_source_folder(self) -> str:
+        """Get photo processing source folder."""
+        return self.get('photo_processing.source_folder', 'Photostream/')
+        
+    def get_photo_destination_folder(self) -> str:
+        """Get photo processing destination folder."""
+        return self.get('photo_processing.destination_folder', 'Ingest/Photolog/Snap/')
