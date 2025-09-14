@@ -22,8 +22,10 @@ class Config:
             }
         },
         "photo_processing": {
-            "source_folder": "Photostream/",
-            "destination_folder": "Ingest/Photolog/Snap/"
+            "source_folder": "Ingest/Photolog/Original/",
+            "destination_folder": "Ingest/Photolog/Processed/",
+            "albums": ["AI4PKM"],
+            "days": 7
         },
         "cron_jobs": []
     }
@@ -107,17 +109,27 @@ class Config:
             agent = self.get_agent()
         return self.get(f'agents-config.{agent}', {})
         
-    def get_photo_processing_config(self) -> Dict[str, str]:
+    def get_photo_processing_config(self) -> Dict[str, Any]:
         """Get photo processing configuration."""
         return self.get('photo_processing', {
-            'source_folder': 'Photostream/',
-            'destination_folder': 'Ingest/Photolog/Snap/'
+            'source_folder': 'Ingest/Photolog/Original/',
+            'destination_folder': 'Ingest/Photolog/Processed/',
+            'albums': ['AI4PKM'],
+            'days': 7
         })
         
     def get_photo_source_folder(self) -> str:
         """Get photo processing source folder."""
-        return self.get('photo_processing.source_folder', 'Photostream/')
+        return self.get('photo_processing.source_folder', 'Ingest/Photolog/Original/')
         
     def get_photo_destination_folder(self) -> str:
         """Get photo processing destination folder."""
-        return self.get('photo_processing.destination_folder', 'Ingest/Photolog/Snap/')
+        return self.get('photo_processing.destination_folder', 'Ingest/Photolog/Processed/')
+    
+    def get_photo_albums(self) -> list:
+        """Get photo processing album names."""
+        return self.get('photo_processing.albums', ['AI4PKM'])
+    
+    def get_photo_days(self) -> int:
+        """Get number of days to look back for photos."""
+        return self.get('photo_processing.days', 7)

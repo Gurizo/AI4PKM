@@ -12,8 +12,10 @@
     }
   },
   "photo_processing": {
-    "source_folder": "Photostream/",
-    "destination_folder": "Ingest/Photolog/Snap/"
+    "source_folder": "Ingest/Photolog/Original/",
+    "destination_folder": "Ingest/Photolog/Processed/",
+    "albums": ["AI4PKM"],
+    "days": 1
   },
   "cron_jobs": [
     {

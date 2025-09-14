@@ -18,25 +18,85 @@ class ProcessPhotos:
         import glob
         import os
 
-        # Get configurable paths
+        # Get configurable paths and settings
         if self.config:
             source_folder = self.config.get_photo_source_folder()
             destination_folder = self.config.get_photo_destination_folder()
+            albums = self.config.get_photo_albums()
+            days = self.config.get_photo_days()
         else:
-            # Fallback to hardcoded paths if no config
-            source_folder = "Photostream/"
-            destination_folder = "Ingest/Photolog/Snap/"
+            # Use config defaults if no config object provided
+            source_folder = "Ingest/Photolog/Original/"
+            destination_folder = "Ingest/Photolog/Processed/"
+            albums = ["AI4PKM"]
+            days = 7
 
         self.logger.info(
             f"Processing photos from: {source_folder} -> {destination_folder}"
         )
+        self.logger.info(f"Albums to process: {albums}")
+        self.logger.info(f"Looking back {days} days")
 
+        # Export photos using AppleScript - process each album
         try:
-            subprocess.run(
-                ["osascript", "_Settings_/Tools/export_photos.applescript"], check=True
-            )
+            # Get the script path relative to the package root
+            script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "export_photos.applescript")
+            script_path = os.path.abspath(script_path)
+            
+            if not os.path.exists(script_path):
+                self.logger.error(f"AppleScript not found: {script_path}")
+                return
+            
+            self.logger.info("Exporting photos from Photos app...")
+            
+            # Process each album in the list
+            for album in albums:
+                self.logger.info(f"Processing album: {album}")
+                result = subprocess.run(
+                    ["osascript", script_path, album, source_folder, str(days)], 
+                    capture_output=True, text=True, check=True
+                )
+                
+                # Log AppleScript output for debugging
+                if result.stderr:
+                    processed_lines = []
+                    skipped_count_msgs = {"too_old": 0, "already_exists": 0, "other": 0}
+                    
+                    for line in result.stderr.strip().split('\n'):
+                        line = line.strip()
+                        if not line:
+                            continue
+                            
+                        # Count skipped photos instead of logging each one
+                        if "Too old:" in line:
+                            skipped_count_msgs["too_old"] += 1
+                        elif "Already exists:" in line:
+                            skipped_count_msgs["already_exists"] += 1
+                        elif any(keyword in line for keyword in ["Exported:", "Processing", "Found", "total photos"]):
+                            # Log important messages at INFO level
+                            self.logger.info(f"AppleScript ({album}): {line}")
+                        else:
+                            # Log other messages at DEBUG level
+                            self.logger.debug(f"AppleScript ({album}): {line}")
+                            skipped_count_msgs["other"] += 1
+                    
+                    # Summarize skipped photos
+                    if skipped_count_msgs["too_old"] > 0:
+                        self.logger.info(f"AppleScript ({album}): Skipped {skipped_count_msgs['too_old']} photos (too old)")
+                    if skipped_count_msgs["already_exists"] > 0:
+                        self.logger.info(f"AppleScript ({album}): Skipped {skipped_count_msgs['already_exists']} photos (already exists)")
+                    if skipped_count_msgs["other"] > 0:
+                        self.logger.debug(f"AppleScript ({album}): {skipped_count_msgs['other']} other debug messages")
+                            
+            self.logger.info("Photo export completed successfully for all albums")
+            
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"AppleScript execution failed for album {album}: {e}")
+            self.logger.error(f"Error output: {e.stderr}")
+            return
         except Exception as e:
             self.logger.error(f"Error exporting photos: {e}")
+            return
 
         try:
             # Ensure destination directory exists
@@ -61,20 +121,41 @@ class ProcessPhotos:
 
                 processed_basenames.add(basename_no_ext)
 
-                # Check for any file whose name starts with basename_no_ext exists
-                file_path = os.path.join(destination_folder, f"{basename_no_ext}")
-                files = glob.glob(f"{file_path}*")
+                # Check for any file with new format: YYYY-MM-DD basename_no_ext.*
+                files = glob.glob(f"{destination_folder}*{basename_no_ext}.*")
                 if files:
                     skipped_count += 1
                     continue
 
+                # Get the processing script path
+                script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "process_photo.sh")
+                script_path = os.path.abspath(script_path)
+                
+                if not os.path.exists(script_path):
+                    self.logger.error(f"Processing script not found: {script_path}")
+                    continue
+                
                 self.logger.info(f"Processing: {basename}")
-                subprocess.run(
-                    ["_Settings_/Tools/process_photo.sh", file, destination_folder],
-                    check=True,
-                )
-                processed_count += 1
-                processed_basenames.add(basename_no_ext)
+                try:
+                    result = subprocess.run(
+                        [script_path, file, destination_folder],
+                        capture_output=True, text=True, check=True
+                    )
+                    
+                    processed_count += 1
+                    self.logger.info(f"Successfully processed: {basename}")
+                    
+                    # Log shell script output for debugging
+                    script_output = result.stdout.strip() if result.stdout else ""
+                    if script_output:
+                        for line in script_output.split('\n'):
+                            if line.strip():
+                                self.logger.debug(f"Shell script: {line.strip()}")
+                                
+                except subprocess.CalledProcessError as e:
+                    self.logger.error(f"Failed to process {basename}: {e}")
+                    self.logger.error(f"Error output: {e.stderr}")
+                    continue
 
             self.logger.info(
                 f"Photo processing completed: {processed_count} processed, {skipped_count} skipped"
