@@ -390,8 +390,10 @@ class PKMApp:
                     agent_display = f" [green]\\[{agent_shortcuts.get(agent_name, agent_name)}][/green]"
                 else:
                     agent_display = f" [dim]\\[default][/dim]"
-                # Get job name from either inline_prompt or command
-                job_name = job.get('inline_prompt') or job.get('command', 'Unknown')
+                # Get job name with proper formatting convention
+                inline_prompt = job.get('inline_prompt')
+                command = job.get('command')
+                job_name = f'"{inline_prompt}"' if inline_prompt else f"[{command}]" if command else "Unknown"
                 self.console.print(f"  {i}. {job_name} - {job.get('cron', 'No schedule')}{agent_display}")
         else:
             self.console.print(f"\n[dim]No cron jobs configured.[/dim]")

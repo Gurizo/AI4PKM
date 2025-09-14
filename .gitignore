@@ -12,8 +12,6 @@ Photostream/
 
 # Photo processing artifacts
 *.DS_Store
-Ingest/Photolog/Original/
-Ingest/Photolog/Processed/
 
 # Python artifacts
 __pycache__

@@ -25,7 +25,7 @@ class ProcessPhotos:
             albums = self.config.get_photo_albums()
             days = self.config.get_photo_days()
         else:
-            # Fallback to hardcoded paths if no config
+            # Use config defaults if no config object provided
             source_folder = "Ingest/Photolog/Original/"
             destination_folder = "Ingest/Photolog/Processed/"
             albums = ["AI4PKM"]
@@ -58,10 +58,35 @@ class ProcessPhotos:
                 )
                 
                 # Log AppleScript output for debugging
-                if result.stdout:
-                    for line in result.stdout.strip().split('\n'):
-                        if line.strip():
-                            self.logger.info(f"AppleScript ({album}): {line.strip()}")
+                if result.stderr:
+                    processed_lines = []
+                    skipped_count_msgs = {"too_old": 0, "already_exists": 0, "other": 0}
+                    
+                    for line in result.stderr.strip().split('\n'):
+                        line = line.strip()
+                        if not line:
+                            continue
+                            
+                        # Count skipped photos instead of logging each one
+                        if "Too old:" in line:
+                            skipped_count_msgs["too_old"] += 1
+                        elif "Already exists:" in line:
+                            skipped_count_msgs["already_exists"] += 1
+                        elif any(keyword in line for keyword in ["Exported:", "Processing", "Found", "total photos"]):
+                            # Log important messages at INFO level
+                            self.logger.info(f"AppleScript ({album}): {line}")
+                        else:
+                            # Log other messages at DEBUG level
+                            self.logger.debug(f"AppleScript ({album}): {line}")
+                            skipped_count_msgs["other"] += 1
+                    
+                    # Summarize skipped photos
+                    if skipped_count_msgs["too_old"] > 0:
+                        self.logger.info(f"AppleScript ({album}): Skipped {skipped_count_msgs['too_old']} photos (too old)")
+                    if skipped_count_msgs["already_exists"] > 0:
+                        self.logger.info(f"AppleScript ({album}): Skipped {skipped_count_msgs['already_exists']} photos (already exists)")
+                    if skipped_count_msgs["other"] > 0:
+                        self.logger.debug(f"AppleScript ({album}): {skipped_count_msgs['other']} other debug messages")
                             
             self.logger.info("Photo export completed successfully for all albums")
             
@@ -96,9 +121,8 @@ class ProcessPhotos:
 
                 processed_basenames.add(basename_no_ext)
 
-                # Check for any file whose name starts with basename_no_ext exists
-                file_path = os.path.join(destination_folder, f"{basename_no_ext}")
-                files = glob.glob(f"{file_path}*")
+                # Check for any file with new format: YYYY-MM-DD basename_no_ext.*
+                files = glob.glob(f"{destination_folder}*{basename_no_ext}.*")
                 if files:
                     skipped_count += 1
                     continue
@@ -118,16 +142,11 @@ class ProcessPhotos:
                         capture_output=True, text=True, check=True
                     )
                     
-                    # Check if shell script actually processed or skipped
-                    script_output = result.stdout.strip() if result.stdout else ""
-                    if "Skipping: File already exists" in script_output:
-                        skipped_count += 1
-                        # Skip logging for already processed files
-                    else:
-                        processed_count += 1
-                        self.logger.info(f"Successfully processed: {basename}")
+                    processed_count += 1
+                    self.logger.info(f"Successfully processed: {basename}")
                     
                     # Log shell script output for debugging
+                    script_output = result.stdout.strip() if result.stdout else ""
                     if script_output:
                         for line in script_output.split('\n'):
                             if line.strip():
