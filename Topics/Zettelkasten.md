@@ -8,7 +8,7 @@ related:
 ---
 ## Summary
 
-제텔카스텐(Zettelkasten)은 독일의 사회학자 니클라스 루만(Niklas Luhmann, 1927-1998) 교수가 만든 개인 지식 관리(PKM) 시스템이다. 제텔카스텐은 독일어로 '메모(Zettel)'와 '상자(Kasten)'가 합쳐진 단어다. 루만 교수는 이 제텔카스텐 방법을 이용해 70여 권의 책과 400개 이상의 학술 논문을 발표했다. ([[Ingest/Clippings/2025-09-09 두 번째 뇌(Second Brain)란 무엇인가?.md|두 번째 뇌(Second Brain)란 무엇인가?]])
+제텔카스텐(Zettelkasten)은 독일의 사회학자 니클라스 루만(Niklas Luhmann, 1927-1998) 교수가 만든 개인 지식 관리(PKM) 시스템이다. 제텔카스텐은 독일어로 '메모(Zettel)'와 '상자(Kasten)'가 합쳐진 단어다. 루만 교수는 이 제텔카스텐 방법을 이용해 70여 권의 책과 400개 이상의 학술 논문을 발표했다. ([[2025-09-09 두 번째 뇌(Second Brain)란 무엇인가|두 번째 뇌(Second Brain)란 무엇인가?]])
 
 ## Interests
 
