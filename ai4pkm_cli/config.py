@@ -27,6 +27,10 @@ class Config:
             "albums": ["AI4PKM"],
             "days": 7
         },
+        "notes_processing": {
+            "destination_folder": "Ingest/Notes/",
+            "days": 7
+        },
         "cron_jobs": []
     }
     
@@ -133,3 +137,18 @@ class Config:
     def get_photo_days(self) -> int:
         """Get number of days to look back for photos."""
         return self.get('photo_processing.days', 7)
+    
+    def get_notes_processing_config(self) -> Dict[str, Any]:
+        """Get notes processing configuration."""
+        return self.get('notes_processing', {
+            'destination_folder': 'Ingest/Notes/',
+            'days': 7
+        })
+        
+    def get_notes_destination_folder(self) -> str:
+        """Get notes processing destination folder."""
+        return self.get('notes_processing.destination_folder', 'Ingest/Notes/')
+    
+    def get_notes_days(self) -> int:
+        """Get number of days to look back for notes."""
+        return self.get('notes_processing.days', 7)

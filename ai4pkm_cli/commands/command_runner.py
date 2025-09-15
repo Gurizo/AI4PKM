@@ -14,6 +14,16 @@ class CommandRunner:
             report_generator = GenerateReport(self.logger, agent)
             report_generator.generate_interactive_report()
             return True
+        elif command == "process_notes":
+            from .process_notes import ProcessNotes
+            notes_processor = ProcessNotes(self.logger, self.config)
+            notes_processor.process_notes()
+            return True
+        elif command == "process_notes_cached" or command == "refine_notes":
+            from .process_notes import ProcessNotes
+            notes_processor = ProcessNotes(self.logger, self.config)
+            notes_processor.process_notes(use_cache=True)
+            return True
         else:
             self.logger.error(f"Unknown command: {command}")
             return False
