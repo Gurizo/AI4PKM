@@ -20,7 +20,7 @@
     "days": 1
   },
   "notes_processing": {
-    "destination_folder": "Ingest/Notes/",
+    "destination_folder": "Ingest/Apple Notes/",
     "days": 7
   },
   "cron_jobs": [
@@ -47,6 +47,12 @@
       "command": "process_photos",
       "cron": "0 * * * *",
       "description": "Regularly sync and process photos from iCloud",
+      "enabled": true
+    },
+    {
+      "command": "process_notes",
+      "cron": "15 * * * *",
+      "description": "Regularly sync and process notes from Apple Notes",
       "enabled": true
     }
   ]
