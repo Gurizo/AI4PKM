@@ -51,7 +51,7 @@
     },
     {
       "command": "process_notes",
-      "cron": "0 * * * *",
+      "cron": "15 * * * *",
       "description": "Regularly sync and process notes from Apple Notes",
       "enabled": true
     }

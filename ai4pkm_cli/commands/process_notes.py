@@ -1,24 +1,26 @@
 """Apple Notes processing system with AppleScript integration."""
 
-import subprocess
-import os
-import json
 import glob
+import json
+import os
 import re
 import shutil
+import subprocess
+from typing import Optional, Set, Dict, Any
+
 from rich.console import Console
 
 
 class ProcessNotes:
     """Handles Apple Notes processing with configurable destination folders."""
 
-    def __init__(self, logger, config=None):
+    def __init__(self, logger, config: Optional[Any] = None):
         """Initialize notes processor."""
         self.logger = logger
         self.console = Console()
         self.config = config
 
-    def process_notes(self, use_cache=False):
+    def process_notes(self, use_cache: bool = False) -> None:
         """Process Apple Notes with configurable destination folder.
         
         Args:
@@ -31,7 +33,7 @@ class ProcessNotes:
             days = self.config.get_notes_days()
         else:
             # Use defaults if no config object provided
-            destination_folder = "Ingest/Notes/"
+            destination_folder = "Ingest/Apple Notes/"
             days = 7
 
         self.logger.info(f"Processing notes to: {destination_folder}")
@@ -185,7 +187,7 @@ class ProcessNotes:
             except Exception as e:
                 self.logger.warning(f"Could not clean up temp folder: {e}")
 
-    def _sanitize_title(self, title):
+    def _sanitize_title(self, title: str) -> str:
         """Sanitize title to match the format used in filenames."""
         # Apply same sanitization as AppleScript
         safe_title = title.replace("/", "-").replace("\\", "-").replace(":", "-")
@@ -439,7 +441,7 @@ class ProcessNotes:
         
         return processed_content
 
-    def _create_frontmatter(self, metadata):
+    def _create_frontmatter(self, metadata: Dict[str, Any]) -> str:
         """Create YAML frontmatter for the note."""
         title = metadata.get('title', 'Untitled')
         created = metadata.get('created', '')
