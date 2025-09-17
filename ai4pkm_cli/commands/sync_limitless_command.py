@@ -22,14 +22,16 @@ class SyncLimitlessCommand:
 
         self.api_key = os.getenv("LIMITLESS_API_KEY")
         
+        if not self.api_key:
+            self.is_ready = False
+            self.logger.warning("LIMITLESS_API_KEY not found in .env file. Skipping sync command.")
+            return 
+
+        self.is_ready = True
         limitless_config = self.config.get('commands_config', {}).get('limitless', {})
         self.api_base_url = limitless_config.get('api_base_url', "https://api.limitless.ai/v1")
         self.output_dir = Path(limitless_config.get('output_dir', "Ingest/Limitless"))
         self.start_days_ago = limitless_config.get('start_days_ago', 7)
-        
-        if not self.api_key:
-            raise ValueError("API key not found. Please set LIMITLESS_API_KEY in your .env file.")
-
         self.headers = {"X-API-Key": self.api_key, "Content-Type": "application/json"}
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -37,6 +39,9 @@ class SyncLimitlessCommand:
         """
         Limitless 데이터 동기화를 실행하는 메인 함수.
         """
+        if not hasattr(self, 'is_ready') or not self.is_ready:
+            return True 
+    
         self.logger.info("Starting Limitless data sync command...")
         try:
             # OS의 로컬 타임존
