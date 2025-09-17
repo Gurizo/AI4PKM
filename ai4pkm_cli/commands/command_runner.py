@@ -23,6 +23,10 @@ class CommandRunner:
             from .process_notes import ProcessNotes
             notes_processor = ProcessNotes(self.logger, self.config)
             notes_processor.process_notes(use_cache=True)
+        elif command == "sync-limitless":
+            from .sync_limitless_command import SyncLimitlessCommand
+            syncer = SyncLimitlessCommand(self.logger)
+            syncer.run_sync()
             return True
         else:
             self.logger.error(f"Unknown command: {command}")

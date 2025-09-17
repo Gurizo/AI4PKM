@@ -11,12 +11,15 @@
       "command": "codex"
     }
   },
+  "limitless_sync": {
+    "api_base_url": "https://api.limitless.ai/v1",
+    "output_dir": "Ingest/Limitless",
+    "start_days_ago": 7
+  },
   "photo_processing": {
     "source_folder": "Ingest/Photolog/Original/",
     "destination_folder": "Ingest/Photolog/Processed/",
-    "albums": [
-      "AI4PKM"
-    ],
+    "albums": ["AI4PKM"],
     "days": 1
   },
   "notes_processing": {
@@ -53,6 +56,12 @@
       "command": "process_notes",
       "cron": "15 * * * *",
       "description": "Regularly sync and process notes from Apple Notes",
+      "enabled": true
+    },
+    {
+      "command": "sync-limitless",
+      "cron": "*/30 * * * *",
+      "description": "Automatically sync Limitless data every 30 minutes",
       "enabled": true
     }
   ]
