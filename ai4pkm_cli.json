@@ -11,6 +11,10 @@
       "command": "codex"
     }
   },
+  "gobi_sync": {
+    "api_base_url": "https://api.joingobi.com/api",
+    "output_dir": "Ingest/Gobi"
+  },
   "limitless_sync": {
     "api_base_url": "https://api.limitless.ai/v1",
     "output_dir": "Ingest/Limitless",
@@ -19,7 +23,9 @@
   "photo_processing": {
     "source_folder": "Ingest/Photolog/Original/",
     "destination_folder": "Ingest/Photolog/Processed/",
-    "albums": ["AI4PKM"],
+    "albums": [
+      "AI4PKM"
+    ],
     "days": 1
   },
   "notes_processing": {
@@ -62,6 +68,12 @@
       "command": "sync-limitless",
       "cron": "*/30 * * * *",
       "description": "Automatically sync Limitless data every 30 minutes",
+      "enabled": true
+    },
+    {
+      "command": "sync-gobi",
+      "cron": "*/30 * * * *",
+      "description": "Automatically sync Gobi data every 30 minutes",
       "enabled": true
     }
   ]

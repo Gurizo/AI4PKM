@@ -28,6 +28,12 @@ class CommandRunner:
             syncer = SyncLimitlessCommand(self.logger)
             syncer.run_sync()
             return True
+        elif command == "sync-gobi":
+            from .sync_gobi_command import SyncGobiCommand
+
+            syncer = SyncGobiCommand(self.logger)
+            syncer.run_sync()
+            return True
         else:
             self.logger.error(f"Unknown command: {command}")
             return False

@@ -7,6 +7,10 @@ import click
 from .cli import PKMApp
 import logging
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def signal_handler(sig, frame):
     """Handle SIGINT (Ctrl+C) gracefully."""
     print("\n\nShutting down PKM CLI...")
