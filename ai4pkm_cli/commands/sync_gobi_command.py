@@ -142,15 +142,26 @@ class SyncGobiCommand:
                 )
             elif downloadUrl:
                 filename = f"{timestamp_ms}.jpeg"
-                frames_dir = self.output_dir / "frames"
-                if not (frames_dir / filename).exists():
+                # Create hierarchical folder structure: frames/YYYY/mm/dd/HH
+                year = local_dt.strftime("%Y")
+                month = local_dt.strftime("%m")
+                day = local_dt.strftime("%d")
+                hour = local_dt.strftime("%H")
+
+                frames_dir = self.output_dir / "frames" / year / month / day / hour
+                frames_dir.mkdir(parents=True, exist_ok=True)
+
+                file_path = frames_dir / filename
+                relative_path = f"frames/{year}/{month}/{day}/{hour}/{filename}"
+
+                if not file_path.exists():
                     self.logger.info(f"Downloading frame {filename}...")
                     response = requests.get(downloadUrl)
                     response.raise_for_status()
-                    with open(frames_dir / filename, "wb") as f:
+                    with open(file_path, "wb") as f:
                         f.write(response.content)
                 markdown_contents[local_dt.strftime("%Y-%m-%d")] += (
-                    f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} ![frame](frames/{filename})\n"
+                    f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} ![frame]({relative_path})\n"
                 )
 
         return markdown_contents
