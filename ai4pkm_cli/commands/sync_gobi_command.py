@@ -129,11 +129,6 @@ class SyncGobiCommand:
                         }
                     )
             frames.extend(data.get("frames", []))
-            for frame in frames:
-                local_dt = datetime.fromisoformat(
-                    frame["created_at"].replace("Z", "+00:00")
-                ).astimezone(pytz.timezone(timezone_name))
-                frame["created_at"] = local_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
             lastSyncTime = data.get("lastSyncTime")
             with open(self.output_dir / deviceId / "lastSyncTime.txt", "w+") as f:
                 f.write(str(lastSyncTime))
