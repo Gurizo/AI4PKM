@@ -130,8 +130,6 @@ class SyncGobiCommand:
                     )
             frames.extend(data.get("frames", []))
             for frame in frames:
-                print(frame["created_at"])
-                # convert frame["created_at"] to timezone_name
                 local_dt = datetime.fromisoformat(
                     frame["created_at"].replace("Z", "+00:00")
                 ).astimezone(pytz.timezone(timezone_name))
@@ -180,9 +178,6 @@ class SyncGobiCommand:
         dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         local_dt = dt.astimezone(local_tz)
         date_key = local_dt.strftime("%Y-%m-%d")
-        print(
-            f"Processing entry: is_frame {download_url is not None} at {local_dt} {timestamp}"
-        )
 
         if transcription:
             markdown_line = (
