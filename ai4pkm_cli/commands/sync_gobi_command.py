@@ -2,10 +2,11 @@
 
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import pytz
 from tzlocal import get_localzone
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from ai4pkm_cli.config import Config
 
@@ -20,8 +21,6 @@ class SyncGobiCommand:
             "api_base_url", "https://api.joingobi.com/api"
         )
         self.output_dir = Path(gobi_config.get("output_dir", "Ingest/Gobi"))
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.headers = {"X-API-Key": self.api_key, "Content-Type": "application/json"}
 
     def run_sync(self):
         """
@@ -39,12 +38,30 @@ class SyncGobiCommand:
             timezone_name = str(local_timezone)
             self.logger.info(f"Using local timezone: {timezone_name}")
 
-            transcriptions, frames = self.fetch_all_data()
+            response = requests.get(
+                f"{self.api_base_url}/devices-by-api-key",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-API-Key": self.api_key,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            devices = data.get("devices", [])
 
-            markdowns = self.format_data_markdown(transcriptions, frames, timezone_name)
+            for device in devices:
+                deviceId = device.get("public_key")
+                (self.output_dir / deviceId).mkdir(parents=True, exist_ok=True)
+                transcriptions, frames = self.fetch_all_data(
+                    deviceId, self.api_key, timezone_name
+                )
 
-            for target_date, markdown in markdowns.items():
-                self.save_to_file(markdown, target_date)
+                markdowns = self.format_data_markdown(
+                    deviceId, transcriptions, frames, timezone_name
+                )
+
+                for target_date, markdown in markdowns.items():
+                    self.save_to_file(deviceId, markdown, target_date)
 
             self.logger.info("Gobi data sync command finished successfully.")
             return True
@@ -55,10 +72,10 @@ class SyncGobiCommand:
             self.logger.error(f"An error occurred during Gobi sync command: {e}")
             return False
 
-    def fetch_all_data(self):
+    def fetch_all_data(self, deviceId, api_key, timezone_name):
         print("ℹ️  Fetching recent data...")
 
-        last_sync_time_file = self.output_dir / "lastSyncTime.txt"
+        last_sync_time_file = self.output_dir / deviceId / "lastSyncTime.txt"
         if last_sync_time_file.exists():
             with open(last_sync_time_file, "r") as f:
                 last_sync_time = int(f.read())
@@ -75,13 +92,17 @@ class SyncGobiCommand:
             params = {"lastSyncTime": last_sync_time}
         else:
             params = {}
+        params["deviceId"] = deviceId
 
         transcriptions = []
         frames = []
         try:
             response = requests.get(
                 f"{self.api_base_url}/sync",
-                headers=self.headers,
+                headers={
+                    "Content-Type": "application/json",
+                    "X-API-Key": api_key,
+                },
                 params=params,
             )
             response.raise_for_status()
@@ -93,7 +114,13 @@ class SyncGobiCommand:
                     if not line:
                         continue
                     date_time_str = ":".join(line.split(":")[:-1])
-                    date_time_str = date_time_str[:23] + "Z"
+                    date_time_str = date_time_str[:-6] + "Z"
+                    # subtract 137.7 seconds from date_time_str
+                    # due to bug in 704 below builds
+                    date_time_str = datetime.fromisoformat(
+                        date_time_str.replace("Z", "+00:00")
+                    ) - timedelta(seconds=137.7)
+                    date_time_str = date_time_str.strftime("%Y-%m-%dT%H:%M:%SZ")
                     transcriptions.append(
                         {
                             **transcription,
@@ -102,8 +129,15 @@ class SyncGobiCommand:
                         }
                     )
             frames.extend(data.get("frames", []))
+            for frame in frames:
+                print(frame["created_at"])
+                # convert frame["created_at"] to timezone_name
+                local_dt = datetime.fromisoformat(
+                    frame["created_at"].replace("Z", "+00:00")
+                ).astimezone(pytz.timezone(timezone_name))
+                frame["created_at"] = local_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
             lastSyncTime = data.get("lastSyncTime")
-            with open(self.output_dir / "lastSyncTime.txt", "w") as f:
+            with open(self.output_dir / deviceId / "lastSyncTime.txt", "w+") as f:
                 f.write(str(lastSyncTime))
 
         except requests.exceptions.RequestException as e:
@@ -117,7 +151,64 @@ class SyncGobiCommand:
         )
         return transcriptions, frames
 
-    def format_data_markdown(self, transcriptions, frames, timezone_str):
+    def _download_frame(self, download_url, file_path):
+        """
+        Downloads a single frame image to the specified path.
+        Returns True if successful, False otherwise.
+        """
+        try:
+            if not file_path.exists():
+                self.logger.info(f"Downloading frame to {file_path}...")
+                response = requests.get(download_url)
+                response.raise_for_status()
+                with open(file_path, "wb") as f:
+                    f.write(response.content)
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to download frame {file_path}: {e}")
+            return False
+
+    def _process_entry(self, entry, local_tz, deviceId):
+        """
+        Processes a single entry (transcription or frame) and returns the formatted data.
+        Returns a tuple of (date_key, markdown_line, download_task_or_None).
+        """
+        transcription = entry.get("transcription")
+        download_url = entry.get("downloadUrl")
+        timestamp = entry.get("created_at")
+
+        dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        local_dt = dt.astimezone(local_tz)
+        date_key = local_dt.strftime("%Y-%m-%d")
+        print(
+            f"Processing entry: is_frame {download_url is not None} at {local_dt} {timestamp}"
+        )
+
+        if transcription:
+            markdown_line = (
+                f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} {transcription}\n"
+            )
+            return date_key, markdown_line, None
+        elif download_url:
+            filename = f"{timestamp.split('T')[1].split('.')[0]}.jpeg"
+            # Create hierarchical folder structure: frames/<deviceId>/YYYY/mm/dd/HH
+            year = local_dt.strftime("%Y")
+            month = local_dt.strftime("%m")
+            day = local_dt.strftime("%d")
+            hour = local_dt.strftime("%H")
+
+            relative_dir = f"frames/{year}/{month}/{day}/{hour}"
+            frames_dir = self.output_dir / deviceId / relative_dir
+            frames_dir.mkdir(parents=True, exist_ok=True)
+            file_path = frames_dir / filename
+
+            markdown_line = f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} ![frame]({relative_dir}/{filename})\n"
+            download_task = (download_url, file_path)
+            return date_key, markdown_line, download_task
+
+        return None, None, None
+
+    def format_data_markdown(self, deviceId, transcriptions, frames, timezone_str):
         """
         Converts lifelog data to the exact markdown format used by the Obsidian plugin.
         """
@@ -127,47 +218,58 @@ class SyncGobiCommand:
 
         markdown_contents = {}
 
+        # Process entries and collect download tasks
+        download_tasks = []
+        processed_entries = []
+
         for entry in sorted(data, key=lambda x: x.get("created_at", "")):
-            transcription = entry.get("transcription")
-            downloadUrl = entry.get("downloadUrl")
-            timestamp = entry.get("created_at")
-            dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-            timestamp_ms = int(dt.timestamp() * 1000)
-            local_dt = dt.astimezone(local_tz)
-            if local_dt.strftime("%Y-%m-%d") not in markdown_contents:
-                markdown_contents[local_dt.strftime("%Y-%m-%d")] = ""
-            if transcription:
-                markdown_contents[local_dt.strftime("%Y-%m-%d")] += (
-                    f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} {transcription}\n"
-                )
-            elif downloadUrl:
-                filename = f"{timestamp_ms}.jpeg"
-                # Create hierarchical folder structure: frames/YYYY/mm/dd/HH
-                year = local_dt.strftime("%Y")
-                month = local_dt.strftime("%m")
-                day = local_dt.strftime("%d")
-                hour = local_dt.strftime("%H")
+            date_key, markdown_line, download_task = self._process_entry(
+                entry, local_tz, deviceId
+            )
+            if date_key and markdown_line:
+                processed_entries.append((date_key, markdown_line))
+                if download_task:
+                    download_tasks.append(download_task)
 
-                frames_dir = self.output_dir / "frames" / year / month / day / hour
-                frames_dir.mkdir(parents=True, exist_ok=True)
+        # Parallel processing for image downloads
+        if download_tasks:
+            self.logger.info(
+                f"Starting parallel download of {len(download_tasks)} frames..."
+            )
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                # Submit all download tasks
+                future_to_task = {
+                    executor.submit(self._download_frame, download_url, file_path): (
+                        download_url,
+                        file_path,
+                    )
+                    for download_url, file_path in download_tasks
+                }
 
-                file_path = frames_dir / filename
-                relative_path = f"frames/{year}/{month}/{day}/{hour}/{filename}"
+                # Process completed downloads
+                for future in as_completed(future_to_task):
+                    download_url, file_path = future_to_task[future]
+                    try:
+                        success = future.result()
+                        if not success:
+                            self.logger.warning(
+                                f"Failed to download frame: {file_path}"
+                            )
+                    except Exception as e:
+                        self.logger.error(
+                            f"Exception during frame download {file_path}: {e}"
+                        )
 
-                if not file_path.exists():
-                    self.logger.info(f"Downloading frame {filename}...")
-                    response = requests.get(downloadUrl)
-                    response.raise_for_status()
-                    with open(file_path, "wb") as f:
-                        f.write(response.content)
-                markdown_contents[local_dt.strftime("%Y-%m-%d")] += (
-                    f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} ![frame]({relative_path})\n"
-                )
+        # Build markdown contents from processed entries
+        for date_key, markdown_line in processed_entries:
+            if date_key not in markdown_contents:
+                markdown_contents[date_key] = ""
+            markdown_contents[date_key] += markdown_line
 
         return markdown_contents
 
-    def save_to_file(self, content, target_date):
-        filepath = self.output_dir / f"{target_date}.md"
+    def save_to_file(self, deviceId, content, target_date):
+        filepath = self.output_dir / f"{deviceId}/{target_date}.md"
         try:
             filepath.write_text(content, encoding="utf-8")
             print(f"📝 Saved to: {filepath}")
