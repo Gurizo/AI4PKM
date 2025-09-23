@@ -11,12 +11,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ai4pkm_cli.config import Config
 
 
-class SyncGobiCommand:
-    def __init__(self, logger):
+class SyncGobiByTagsCommand:
+    def __init__(self, tags, logger):
         self.logger = logger
         self.config = Config()
-        self.api_key = os.getenv("GOBI_API_KEY")
-        gobi_config = self.config.get("gobi_sync", {})
+        self.tags = tags
+        self.admin_api_key = os.getenv("GOBI_ADMIN_API_KEY")
+        gobi_config = self.config.get("gobi_sync_by_tags", {})
         self.api_base_url = gobi_config.get(
             "api_base_url", "https://api.joingobi.com/api"
         )
@@ -26,9 +27,15 @@ class SyncGobiCommand:
         """
         Gobi 데이터 동기화를 실행하는 메인 함수.
         """
-        if not self.api_key:
+        if not self.admin_api_key:
             self.logger.warning(
-                "GOBI_API_KEY not found in .env file. Skipping sync command."
+                "GOBI_ADMIN_API_KEY not found in .env file. Skipping sync command."
+            )
+            return False
+
+        if not self.tags:
+            self.logger.warning(
+                "GOBI_TAGS not found in .env file. Skipping sync command."
             )
             return False
 
@@ -38,12 +45,29 @@ class SyncGobiCommand:
             timezone_name = str(local_timezone)
             self.logger.info(f"Using local timezone: {timezone_name}")
 
-            transcriptions, frames = self.fetch_all_data()
+            response = requests.get(
+                f"{self.api_base_url}/devices-by-tags?tags={self.tags}",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-API-Key": self.admin_api_key,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            devices = data.get("devices", [])
 
-            markdowns = self.format_data_markdown(transcriptions, frames, timezone_name)
+            for device in devices:
+                deviceId = device.get("public_key")
+                (self.output_dir / deviceId).mkdir(parents=True, exist_ok=True)
 
-            for target_date, markdown in markdowns.items():
-                self.save_to_file(markdown, target_date)
+                transcriptions, frames = self.fetch_all_data(deviceId)
+
+                markdowns = self.format_data_markdown(
+                    deviceId, transcriptions, frames, timezone_name
+                )
+
+                for target_date, markdown in markdowns.items():
+                    self.save_to_file(deviceId, markdown, target_date)
 
             self.logger.info("Gobi data sync command finished successfully.")
             return True
@@ -54,35 +78,21 @@ class SyncGobiCommand:
             self.logger.error(f"An error occurred during Gobi sync command: {e}")
             return False
 
-    def fetch_all_data(self):
+    def fetch_all_data(self, deviceId):
         print("ℹ️  Fetching recent data...")
 
-        last_sync_time_file = self.output_dir / "lastSyncTime.txt"
-        if last_sync_time_file.exists():
-            with open(last_sync_time_file, "r") as f:
-                last_sync_time = int(f.read())
-                last_sync_time = int(
-                    datetime.fromtimestamp(last_sync_time / 1000)
-                    .replace(hour=0, minute=0, second=0, microsecond=0)
-                    .timestamp()
-                    * 1000
-                )
-        else:
-            last_sync_time = None
-
-        if last_sync_time:
-            params = {"lastSyncTime": last_sync_time}
-        else:
-            params = {}
+        params = {}
+        params["deviceId"] = deviceId
+        params["tags"] = self.tags
 
         transcriptions = []
         frames = []
         try:
             response = requests.get(
-                f"{self.api_base_url}/sync",
+                f"{self.api_base_url}/sync-by-tags",
                 headers={
                     "Content-Type": "application/json",
-                    "X-API-Key": self.api_key,
+                    "X-API-Key": self.admin_api_key,
                 },
                 params=params,
             )
@@ -110,9 +120,6 @@ class SyncGobiCommand:
                         }
                     )
             frames.extend(data.get("frames", []))
-            lastSyncTime = data.get("lastSyncTime")
-            with open(self.output_dir / "lastSyncTime.txt", "w+") as f:
-                f.write(str(lastSyncTime))
 
         except requests.exceptions.RequestException as e:
             print(f"❌ API request failed: {e}")
@@ -142,7 +149,7 @@ class SyncGobiCommand:
             self.logger.error(f"Failed to download frame {file_path}: {e}")
             return False
 
-    def _process_entry(self, entry, local_tz):
+    def _process_entry(self, entry, local_tz, deviceId):
         """
         Processes a single entry (transcription or frame) and returns the formatted data.
         Returns a tuple of (date_key, markdown_line, download_task_or_None).
@@ -162,14 +169,14 @@ class SyncGobiCommand:
             return date_key, markdown_line, None
         elif download_url:
             filename = f"{timestamp.split('T')[1].split('.')[0]}.jpeg"
-            # Create hierarchical folder structure: frames/YYYY/mm/dd/HH
+            # Create hierarchical folder structure: frames/<deviceId>/YYYY/mm/dd/HH
             year = local_dt.strftime("%Y")
             month = local_dt.strftime("%m")
             day = local_dt.strftime("%d")
             hour = local_dt.strftime("%H")
 
             relative_dir = f"frames/{year}/{month}/{day}/{hour}"
-            frames_dir = self.output_dir / relative_dir
+            frames_dir = self.output_dir / deviceId / relative_dir
             frames_dir.mkdir(parents=True, exist_ok=True)
             file_path = frames_dir / filename
 
@@ -179,7 +186,7 @@ class SyncGobiCommand:
 
         return None, None, None
 
-    def format_data_markdown(self, transcriptions, frames, timezone_str):
+    def format_data_markdown(self, deviceId, transcriptions, frames, timezone_str):
         """
         Converts lifelog data to the exact markdown format used by the Obsidian plugin.
         """
@@ -195,7 +202,7 @@ class SyncGobiCommand:
 
         for entry in sorted(data, key=lambda x: x.get("created_at", "")):
             date_key, markdown_line, download_task = self._process_entry(
-                entry, local_tz
+                entry, local_tz, deviceId
             )
             if date_key and markdown_line:
                 processed_entries.append((date_key, markdown_line))
@@ -239,8 +246,8 @@ class SyncGobiCommand:
 
         return markdown_contents
 
-    def save_to_file(self, content, target_date):
-        filepath = self.output_dir / f"{target_date}.md"
+    def save_to_file(self, deviceId, content, target_date):
+        filepath = self.output_dir / f"{deviceId}/{target_date}.md"
         try:
             filepath.write_text(content, encoding="utf-8")
             print(f"📝 Saved to: {filepath}")
