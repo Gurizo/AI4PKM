@@ -169,7 +169,7 @@ class SyncGobiCommand:
             day = local_dt.strftime("%d")
             hour = local_dt.strftime("%H")
 
-            relative_dir = f"frames/{year}/{month}/{day}/{hour}"
+            relative_dir = f"./frames/{year}/{month}/{day}/{hour}"
             frames_dir = self.output_dir / relative_dir
             frames_dir.mkdir(parents=True, exist_ok=True)
             file_path = frames_dir / filename
