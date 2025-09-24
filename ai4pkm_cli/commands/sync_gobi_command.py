@@ -37,7 +37,8 @@ class SyncGobiCommand:
             local_timezone = get_localzone()
             timezone_name = str(local_timezone)
             self.logger.info(f"Using local timezone: {timezone_name}")
-
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+            
             transcriptions, frames = self.fetch_all_data()
 
             markdowns = self.format_data_markdown(transcriptions, frames, timezone_name)
