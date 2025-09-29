@@ -22,7 +22,7 @@ def signal_handler(sig, frame):
 @click.command()
 @click.option("-p", "--prompt", help="Execute a one-time prompt")
 @click.option("-cmd", "--command", help="Execute a one-time command")
-@click.option("-args", "--arguments", help="Arguments for the command")
+@click.option("-args", "--arguments", help="Arguments for the command", default="{}")
 @click.option(
     "-t",
     "--test",

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI4PKM Web App</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="top-panel">
+        <div id="hour-marks-container">
+          <div id="hour-marks-view"></div>
+        </div>
+        <div id="transcription-container">
+          <div id="transcription-view"></div>
+          <div id="transcription-indicator">
+            <div id="timestamp-label"></div>
+          </div>
+        </div>
+      </div>
+      <div id="timeline-container">
+        <div id="focused-image-view">
+          <img id="focused-image" src="" alt="Current Image" />
+        </div>
+        <div id="timeline-view-container">
+          <div id="timeline-view"></div>
+          <div id="timeline-indicator"></div>
+        </div>
+      </div>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
