@@ -96,12 +96,10 @@ class SyncGobiCommand:
                     if not line:
                         continue
                     date_time_str = ":".join(line.split(":")[:-1])
-                    date_time_str = date_time_str[:-6] + "Z"
-                    # subtract 137.7 seconds from date_time_str
-                    # due to bug in 704 below builds
+                    date_time_str = date_time_str[:-6].split("@")[1] + "Z"
                     date_time_str = datetime.fromisoformat(
                         date_time_str.replace("Z", "+00:00")
-                    ) - timedelta(seconds=137.7)
+                    )
                     date_time_str = date_time_str.strftime("%Y-%m-%dT%H:%M:%SZ")
                     transcriptions.append(
                         {
