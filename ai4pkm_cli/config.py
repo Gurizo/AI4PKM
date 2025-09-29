@@ -31,6 +31,9 @@ class Config:
             "destination_folder": "Ingest/Notes/",
             "days": 7
         },
+        "web_api": {
+            "port": 8000,
+        },
         "cron_jobs": []
     }
     
@@ -152,3 +155,7 @@ class Config:
     def get_notes_days(self) -> int:
         """Get number of days to look back for notes."""
         return self.get('notes_processing.days', 7)
+    
+    def get_web_api_port(self) -> int:
+        """Get web API port."""
+        return self.get('web_api.port', 8000)

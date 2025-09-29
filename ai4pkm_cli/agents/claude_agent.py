@@ -100,10 +100,6 @@ class ClaudeAgent(BaseAgent):
                                 extracted_text = message.content.text
                             elif isinstance(message.content, str):
                                 extracted_text = message.content
-                        elif hasattr(message, 'text'):
-                            extracted_text = message.text
-                        elif hasattr(message, 'result') and isinstance(message.result, str):
-                            extracted_text = message.result
                         elif hasattr(message, 'data') and isinstance(message.data, dict):
                             final_session_id = message.data.get('session_id')
                         
@@ -112,7 +108,7 @@ class ClaudeAgent(BaseAgent):
                             response_parts.append(extracted_text)
                             self.logger.info(f"{extracted_text}")
                     
-                    return ''.join(response_parts), final_session_id
+                    return '\n'.join(response_parts), final_session_id
 
                 # Run the async query
                 processed_content, final_session_id = asyncio.run(run_query())
