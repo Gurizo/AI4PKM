@@ -17,11 +17,11 @@ class SyncGobiByTagsCommand:
         self.config = Config()
         self.tags = tags
         self.admin_api_key = os.getenv("GOBI_ADMIN_API_KEY")
-        gobi_config = self.config.get("gobi_sync_by_tags", {})
-        self.api_base_url = gobi_config.get(
+        self.gobi_config = self.config.get("gobi_sync_by_tags", {})
+        self.api_base_url = self.gobi_config.get(
             "api_base_url", "https://api.joingobi.com/api"
         )
-        self.output_dir = Path(gobi_config.get("output_dir", "Ingest/Gobi"))
+        self.output_dir = Path(self.gobi_config.get("output_dir", "Ingest/Gobi"))
 
     def run_sync(self):
         """
@@ -41,9 +41,16 @@ class SyncGobiByTagsCommand:
 
         self.logger.info("Starting Gobi data sync command...")
         try:
-            local_timezone = get_localzone()
-            timezone_name = str(local_timezone)
-            self.logger.info(f"Using local timezone: {timezone_name}")
+            # Check for local_timezone setting first, fallback to get_localzone()
+            local_timezone_setting = self.gobi_config.get("local_timezone")
+            if local_timezone_setting:
+                local_timezone = pytz.timezone(local_timezone_setting)
+                timezone_name = local_timezone_setting
+                self.logger.info(f"Using configured timezone: {timezone_name}")
+            else:
+                local_timezone = get_localzone()
+                timezone_name = str(local_timezone)
+                self.logger.info(f"Using system local timezone: {timezone_name}")
 
             response = requests.get(
                 f"{self.api_base_url}/devices-by-tags?tags={self.tags}",
