@@ -37,7 +37,7 @@ class CodexAgent(BaseAgent):
             
         try:
             # Execute the prompt using Codex CLI with full_auto and search by default
-            result = self._execute_codex_prompt(prompt_content, full_auto=True)
+            result = self._execute_codex_prompt(prompt_content)
             if result:
                 # Log the result
                 self.logger.info(result)
@@ -50,8 +50,8 @@ class CodexAgent(BaseAgent):
             self.logger.error(f"Error running Codex prompt: {e}")
             return None
             
-    def _execute_codex_prompt(self, prompt_content: str, full_auto: bool = False) -> Optional[str]:
-        """Execute the prompt using Codex CLI."""
+    def _execute_codex_prompt(self, prompt_content: str) -> Optional[str]:
+        """Execute the prompt using Codex CLI with full_auto and search enabled by default."""
         try:
             # Build the command - flags need to come before 'exec'
             cmd = [self.command]
@@ -63,10 +63,9 @@ class CodexAgent(BaseAgent):
             # Add exec subcommand and additional flags
             cmd.append('exec')
             
-            # Add full-auto flag if specified (exec-specific flag)
-            if full_auto:
-                cmd.append('--full-auto')
-                self.logger.debug("Added --full-auto flag to Codex command")
+            # Always add full-auto flag (exec-specific flag)
+            cmd.append('--full-auto')
+            self.logger.debug("Added --full-auto flag to Codex command (default)")
             
             # Add the prompt content
             cmd.append(f'"{prompt_content}"')
