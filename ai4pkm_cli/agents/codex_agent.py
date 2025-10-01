@@ -30,14 +30,14 @@ class CodexAgent(BaseAgent):
     def run_prompt(self, inline_prompt: Optional[str] = None, prompt_name: Optional[str] = None, 
                    params: Optional[Dict[str, Any]] = None, context: Optional[str] = None, 
                    session_id: Optional[str] = None) -> Optional[Tuple[str, Optional[str]]]:
-        """Run a prompt using Codex CLI."""
+        """Run a prompt using Codex CLI with full_auto and search enabled by default."""
         prompt_content = self._prepare_prompt_content(inline_prompt, prompt_name, params, context)
         if prompt_content is None:
             return None
             
         try:
-            # Execute the prompt using Codex CLI
-            result = self._execute_codex_prompt(prompt_content)
+            # Execute the prompt using Codex CLI with full_auto and search by default
+            result = self._execute_codex_prompt(prompt_content, full_auto=True)
             if result:
                 # Log the result
                 self.logger.info(result)
@@ -50,15 +50,26 @@ class CodexAgent(BaseAgent):
             self.logger.error(f"Error running Codex prompt: {e}")
             return None
             
-    def _execute_codex_prompt(self, prompt_content: str) -> Optional[str]:
+    def _execute_codex_prompt(self, prompt_content: str, full_auto: bool = False) -> Optional[str]:
         """Execute the prompt using Codex CLI."""
         try:
-            # Build the command - use exec for non-interactive mode with quoted prompt
-            cmd = [
-                self.command,
-                'exec',
-                f'"{prompt_content}"'
-            ]
+            # Build the command - flags need to come before 'exec'
+            cmd = [self.command]
+            
+            # Add --search by default for Codex (global flag)
+            cmd.append('--search')
+            self.logger.debug("Added --search flag to Codex command (default)")
+            
+            # Add exec subcommand and additional flags
+            cmd.append('exec')
+            
+            # Add full-auto flag if specified (exec-specific flag)
+            if full_auto:
+                cmd.append('--full-auto')
+                self.logger.debug("Added --full-auto flag to Codex command")
+            
+            # Add the prompt content
+            cmd.append(f'"{prompt_content}"')
             
             # Add any additional CLI options from config
             if 'additional_args' in self.config:
