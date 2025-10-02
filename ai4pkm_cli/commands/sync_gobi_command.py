@@ -104,7 +104,8 @@ class SyncGobiCommand:
                     if not line:
                         continue
                     date_time_str = ":".join(line.split(":")[:-1])
-                    date_time_str = date_time_str[:-6].split("@")[1] + "Z"
+                    speaker = date_time_str.split("@")[0]
+                    date_time_str = date_time_str.split("@")[1][:-6] + "Z"
                     date_time_str = datetime.fromisoformat(
                         date_time_str.replace("Z", "+00:00")
                     )
@@ -114,6 +115,7 @@ class SyncGobiCommand:
                             **transcription,
                             "transcription": line.split(": ")[-1],
                             "created_at": date_time_str,
+                            "speaker": speaker,
                         }
                     )
             frames.extend(data.get("frames", []))
@@ -157,6 +159,7 @@ class SyncGobiCommand:
         transcription = entry.get("transcription")
         download_url = entry.get("downloadUrl")
         timestamp = entry.get("created_at")
+        speaker = entry.get("speaker")
 
         dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         local_dt = dt.astimezone(local_tz)
@@ -164,7 +167,7 @@ class SyncGobiCommand:
 
         if transcription:
             markdown_line = (
-                f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} {transcription}\n"
+                f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} {speaker}: {transcription}\n"
             )
             return date_key, markdown_line, None
         elif download_url:
