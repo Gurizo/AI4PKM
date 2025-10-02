@@ -28,10 +28,10 @@ class SyncLimitlessCommand:
             return 
 
         self.is_ready = True
-        limitless_config = self.config.get('commands_config', {}).get('limitless', {})
-        self.api_base_url = limitless_config.get('api_base_url', "https://api.limitless.ai/v1")
-        self.output_dir = Path(limitless_config.get('output_dir', "Ingest/Limitless"))
-        self.start_days_ago = limitless_config.get('start_days_ago', 7)
+        self.limitless_config = self.config.get('limitless_sync', {})
+        self.api_base_url = self.limitless_config.get('api_base_url', "https://api.limitless.ai/v1")
+        self.output_dir = Path(self.limitless_config.get('output_dir', "Ingest/Limitless"))
+        self.start_days_ago = self.limitless_config.get('start_days_ago', 7)
         self.headers = {"X-API-Key": self.api_key, "Content-Type": "application/json"}
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -44,9 +44,15 @@ class SyncLimitlessCommand:
     
         self.logger.info("Starting Limitless data sync command...")
         try:
-            local_timezone = get_localzone()
-            timezone_name = str(local_timezone) 
-            self.logger.info(f"Using local timezone: {timezone_name}")
+            local_timezone_setting = self.limitless_config.get("local_timezone")
+            if local_timezone_setting:
+                local_timezone = pytz.timezone(local_timezone_setting)
+                timezone_name = local_timezone_setting
+                self.logger.info(f"Using configured timezone: {timezone_name}")
+            else:
+                local_timezone = get_localzone()
+                timezone_name = str(local_timezone)
+                self.logger.info(f"Using system local timezone: {timezone_name}")
             
             # 1. Fetch all data once
             all_lifelogs = self._fetch_all_recent_lifelogs()
