@@ -33,6 +33,16 @@ class CommandRunner:
             syncer = SyncLimitlessCommand(self.logger)
             syncer.run_sync()
             return True
+        elif command == "process_event_data":
+            from .process_event_data import ProcessEventData
+
+            processor = ProcessEventData(self.logger, agent)
+            event_name = arguments.get("event_name")
+            if not event_name:
+                self.logger.error("Missing 'event_name' argument for process_event_data")
+                return False
+            processor.process_files(event_name)
+            return True
         elif command == "sync-gobi":
             from .sync_gobi_command import SyncGobiCommand
 

@@ -6,36 +6,55 @@
       {
         "id": "e0351a58636df144",
         "type": "tabs",
+        "dimension": 48.23529411764706,
         "children": [
           {
-            "id": "5ccc5f9ecf40208d",
+            "id": "8fbf8f39b9b037ce",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "Topics/Second Brain.md",
-                "mode": "source",
-                "source": false
+                "file": "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v6.pdf"
               },
-              "icon": "lucide-file",
-              "title": "Second Brain"
-            }
-          },
-          {
-            "id": "05f92a439e38473d",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "_Settings_/Prompts/Process Life Logs (PLL).md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Process Life Logs (PLL)"
+              "icon": "lucide-file-text",
+              "title": "2025-09-29-bellevue_festival_2025-report-v6"
             }
           }
         ]
+      },
+      {
+        "id": "289b1802c3ef4199",
+        "type": "tabs",
+        "dimension": 51.76470588235295,
+        "children": [
+          {
+            "id": "2a6241c8b8d69c37",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v11.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "2025-09-29-bellevue_festival_2025-report-v11"
+            }
+          },
+          {
+            "id": "bd698a5bf2ee6a1c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Untitled 1.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled 1"
+            }
+          }
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -92,7 +111,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 324.5
   },
   "right": {
     "id": "ead04a09efb0ddf1",
@@ -177,7 +196,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -196,53 +216,53 @@
       "janitor:Janitor: scan vault": false
     }
   },
-  "active": "5ccc5f9ecf40208d",
+  "active": "bd698a5bf2ee6a1c",
   "lastOpenFiles": [
-    "Ingest/Photolog/Processed/2025-09-12 IMG_2408.jpg",
-    "Ingest/Photolog/Processed/2025-09-12 IMG_2408.yaml",
-    "Ingest/Photolog/Processed/2025-09-12 IMG_2406.jpg",
-    "Ingest/Photolog/Processed/2025-09-12 IMG_2406.yaml",
-    "Ingest/Photolog/Original/IMG_2408.HEIC",
-    "ai4pkm_cli/commands/__pycache__/process_photos.cpython-312.pyc.4351344000",
-    "Ingest/Photolog/Processed/2025-09-12 IMG_2406.md",
-    "Ingest/Photolog/Original/IMG_2406.HEIC",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2333.md",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2324.jpg",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2324.md",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2373.jpg",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2373.md",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2332.jpg",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2332.md",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2308.jpg",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2308.md",
-    "Ingest/Photolog/Processed/2025-09-07 IMG_2390.jpg",
-    "Ingest/Photolog/Processed/2025-09-07 IMG_2390.md",
-    "Ingest/Photolog/Processed/2025-09-07 IMG_2386.jpg",
-    "Ingest/Photolog/Processed/2025-09-07 IMG_2386.md",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2345.jpg",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2345.md",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2312.jpg",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2312.md",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2353.jpg",
-    "Ingest/Photolog/Processed/2025-09-06 IMG_2353.md",
-    "Ingest/Photolog/Original/IMG_2399.HEIC",
-    "Ingest/Photolog/Original/IMG_2397.HEIC",
-    "Ingest/Photolog/Original/IMG_2396.HEIC",
-    "Ingest/Photolog/Original/IMG_2395.HEIC",
-    "Ingest/Photolog/Original/IMG_2391.HEIC",
-    "Ingest/Photolog/Test/IMG_2308_20250906.md",
-    "_Settings_/Tools/Tools.md",
-    "Ingest/Photolog/Snap/Snap.md",
-    "_Settings_/Workflows/Daily Ingestion and Roundup (DIR).md",
-    "_Settings_/Prompts/Process Life Logs (PLL).md",
-    "(beta) Pick and Process Photos (PPP).md",
-    "_Settings_/Workflows/Interactive Writing Assistant (IWA).md",
-    "AGENTS.md",
-    "GEMINI.md",
-    "CLAUDE.md",
-    "Topics/Obsidian.md",
-    "Ingest/Clippings/2025-09-11 만물상 전파 전쟁.md",
-    "Ingest/Clippings/2025-09-11 7-2. Field Guide for AI-powered PKM (실습) - Jin's Second Brain - Obsidian Publish.md",
-    "AI/Roundup/2025-09-09 Roundup - Gemini.md"
+    "_Settings_/Logs/ai4pkm_2025-10-02.log",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v6.pdf",
+    "Untitled 1.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v11.pdf",
+    "Events/Bellevue_Festival_2025/report/AI4PKM-Methodology-Showcase-Report.md",
+    "Events/Bellevue_Festival_2025/report/AI4PKM-Methodology-Showcase-Report.pdf",
+    "Events/Bellevue_Festival_2025/feedback/feedback6.pdf",
+    "Events/Bellevue_Festival_2025/feedback/feedback6_tmp.html",
+    "Events/Bellevue_Festival_2025/feedback/feedback6.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v11.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v10.pdf",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v10.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v9.pdf",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v9.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v8.pdf",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v8.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v7.pdf",
+    "Reports/2025-09-29-bellevue_festival_2025-report-5.pdf",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v7.md",
+    "Events/Bellevue_Festival_2025/feedback/feedback5.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v6.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report.md",
+    "Events/Bellevue_Festival_2025/feedback/feedback4.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v5.md",
+    "Events/Bellevue_Festival_2025/feedback/feedback3.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v4.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v3.md",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/dancing_in_front_of_crowd.jpg",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/dance_and_crowd.jpg",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/crowd_in_front_of_dancing_team.jpg",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/awesome_dancing_performance.jpg",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/kids_playing_korean_traditional_games.JPG",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/kids_playing_games.JPG",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/IMG_9213.JPG",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/kids_hanging_out_in_vendors.JPG",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/IMG_9216.JPG",
+    "Events/Bellevue_Festival_2025/processed_data/to_be_added/crowd_in_front_of_vendors.jpg",
+    "Events/Bellevue_Festival_2025/feedback/feedback2.md",
+    "Events/Bellevue_Festival_2025/report/2025-09-29-bellevue_festival_2025-report-v2.md",
+    "Reports/2025-09-29-bellevue_festival_2025-report-6 1 1.md",
+    "Events/Bellevue_Festival_2025/feedback/bellevue-festival-feedback1.md",
+    "Reports/feedback/bellevue-festival-feedback1.md",
+    "Reports/2025-09-29-bellevue_festival_2025-report-6 1.md",
+    "Reports/2025-09-29-bellevue_festival_2025-report-6.md",
+    "Reports/2025-09-29-bellevue_festival_2025-report-4.md",
+    "Reports/2025-09-29-bellevue_festival_2025-report-5.md"
   ]
 }

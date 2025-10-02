@@ -44,28 +44,65 @@ class SyncLimitlessCommand:
     
         self.logger.info("Starting Limitless data sync command...")
         try:
-            # OS의 로컬 타임존
             local_timezone = get_localzone()
             timezone_name = str(local_timezone) 
             self.logger.info(f"Using local timezone: {timezone_name}")
             
-            self.sync_missing_dates(timezone_name)
+            # 1. Fetch all data once
+            all_lifelogs = self._fetch_all_recent_lifelogs()
             
+            if all_lifelogs is None:
+                self.logger.error("Failed to fetch data from Limitless API. Aborting sync.")
+                return False
+
+            if not all_lifelogs:
+                self.logger.info("No recent lifelogs found. Sync complete.")
+                return True
+
+            # 2. Determine date range and process each day
+            last_sync_str = self.get_last_sync_date()
+            last_sync_date = datetime.strptime(last_sync_str, "%Y-%m-%d").date()
+            today_date = date.today()
+            
+            print(f"📅 Last sync file found: {last_sync_date.strftime('%Y-%m-%d')}")
+            print(f"🎯 Syncing up to today: {today_date.strftime('%Y-%m-%d')}")
+
+            if last_sync_date > today_date:
+                print("✅ Last sync date is in the future. Re-syncing today just in case.")
+                self._filter_and_save_for_date(today_date.strftime("%Y-%m-%d"), all_lifelogs, timezone_name)
+                print("\n🎉 Sync process completed.")
+                self.logger.info("Limitless data sync command finished successfully.")
+                return True
+
+            dates_to_sync = self.get_date_range(last_sync_date, today_date)
+            
+            if not dates_to_sync:
+                print("✅ Already up to date! Re-syncing today for good measure.")
+                self._filter_and_save_for_date(today_date.strftime("%Y-%m-%d"), all_lifelogs, timezone_name)
+            else:
+                print(f"🔄 Syncing {len(dates_to_sync)} day(s): from {dates_to_sync[0]} to {dates_to_sync[-1]}")
+                for date_str in dates_to_sync:
+                    self._filter_and_save_for_date(date_str, all_lifelogs, timezone_name)
+
+            print("\n🎉 Sync process completed.")
             self.logger.info("Limitless data sync command finished successfully.")
             return True
         except Exception as e:
             self.logger.error(f"An error occurred during Limitless sync command: {e}")
             return False
     
-    def fetch_all_lifelogs_for_day(self, date_str, timezone_str):
+    def _fetch_all_recent_lifelogs(self):
+        """
+        Fetches all recent lifelogs from the API, handling pagination.
+        """
         all_recent_lifelogs = []
         cursor = None
         page_count = 1
         
-        print("ℹ️  Fetching recent lifelogs...")
+        print("ℹ️  Fetching all recent lifelogs from Limitless...")
         while True:
             url = f"{self.api_base_url}/lifelogs"
-            params = { "limit": 10 }
+            params = {"limit": 10}
             if cursor:
                 params['cursor'] = cursor
 
@@ -76,29 +113,40 @@ class SyncLimitlessCommand:
                 
                 lifelogs_page = data.get('data', {}).get('lifelogs', [])
                 if not lifelogs_page:
+                    print("✅ No more pages to fetch.")
                     break
                 
                 all_recent_lifelogs.extend(lifelogs_page)
+                print(f"  - Fetched page {page_count}, {len(lifelogs_page)} entries. Total: {len(all_recent_lifelogs)}")
 
                 cursor = data.get('meta', {}).get('lifelogs', {}).get('nextCursor')
-                if not cursor or page_count > 10:
+                if not cursor or page_count > 10: # Safety break after 10 pages (~100 entries)
+                    print("✅ Reached page limit or end of data.")
                     break
                 
                 page_count += 1
-                time.sleep(0.5)
+                time.sleep(0.5) # Be nice to the API
 
             except requests.exceptions.RequestException as e:
-                print(f"❌ API request failed: {e}")
-                if hasattr(e.response, 'text'): print(f"Response: {e.response.text}")
-                return None
+                print(f"⚠️ API request failed: {e}")
+                if hasattr(e.response, 'text'):
+                    print(f"Response: {e.response.text}")
+                print("⚠️  Will proceed with the data fetched so far.")
+                return all_recent_lifelogs # Return partial data instead of None
         
-        print(f"✅ Retrieved {len(all_recent_lifelogs)} total recent entries. Now filtering for date {date_str}...")
+        print(f"✅ Retrieved {len(all_recent_lifelogs)} total entries.")
+        return all_recent_lifelogs
 
+    def _filter_and_save_for_date(self, date_str, all_lifelogs, timezone_str):
+        """
+        Filters a list of lifelogs for a specific date, formats, and saves them.
+        """
+        print(f"\n📥 Processing {date_str}...")
         target_date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         local_tz = pytz.timezone(timezone_str)
         
         filtered_lifelogs = []
-        for log in all_recent_lifelogs:
+        for log in all_lifelogs:
             start_time_utc_str = log.get('startTime')
             if not start_time_utc_str:
                 continue
@@ -109,8 +157,19 @@ class SyncLimitlessCommand:
             if local_dt.date() == target_date_obj:
                 filtered_lifelogs.append(log)
         
+        if not filtered_lifelogs:
+            print(f"ℹ️ No data found for {date_str}. Skipping file creation.")
+            return
+
         print(f"✅ Found {len(filtered_lifelogs)} entries matching the date {date_str}.")
-        return filtered_lifelogs
+        
+        markdown = self.format_lifelogs_markdown(filtered_lifelogs, timezone_str)
+        
+        if not markdown.strip():
+            print(f"ℹ️ No content to save for {date_str}. Skipping file creation.")
+            return
+
+        self.save_to_file(markdown, date_str)
 
     def format_lifelogs_markdown(self, lifelogs, timezone_str):
         """
@@ -157,26 +216,6 @@ class SyncLimitlessCommand:
         
         return markdown_content.strip()
 
-    def sync_date(self, date_str, timezone):
-        """
-        Syncs data for a specific date, but only saves a file if content exists.
-        """
-        lifelogs = self.fetch_all_lifelogs_for_day(date_str, timezone)
-        
-        if not lifelogs:
-            print(f"ℹ️ No data found for {date_str}. Skipping file creation.")
-            return False 
-        
-        markdown = self.format_lifelogs_markdown(lifelogs, timezone)
-        
-        if not markdown.strip():
-            print(f"ℹ️ No content to save for {date_str}. Skipping file creation.")
-            return False
-
-        filepath = self.save_to_file(markdown, date_str)
-        
-        return filepath is not None
-
     def save_to_file(self, content, date_str):
         filepath = self.output_dir / f"{date_str}.md"
         try:
@@ -215,38 +254,3 @@ class SyncLimitlessCommand:
             dates.append(current_dt.strftime("%Y-%m-%d"))
             current_dt += timedelta(days=1)
         return dates
-
-    def sync_missing_dates(self, timezone):
-        """
-        Syncs all days from the last synced file date up to and INCLUDING today.
-        This overwrites daily notes with the latest data, just like the plugin.
-        """
-        last_sync_str = self.get_last_sync_date()
-        last_sync_date = datetime.strptime(last_sync_str, "%Y-%m-%d").date()
-        today_date = date.today()
-        
-        print(f"📅 Last sync file found: {last_sync_date.strftime('%Y-%m-%d')}")
-        print(f"🎯 Syncing up to today: {today_date.strftime('%Y-%m-%d')}")
-        
-        if last_sync_date > today_date:
-            print("✅ Last sync date is in the future. Nothing to do.")
-            # 오늘 데이터는 한번 덮어써서 최신 상태를 유지합니다.
-            self.sync_date(today_date.strftime("%Y-%m-%d"), timezone)
-            return
-
-        # 마지막 파일 날짜부터 오늘까지의 모든 날짜를 동기화 대상으로 설정
-        dates_to_sync = self.get_date_range(last_sync_date, today_date)
-        
-        if not dates_to_sync:
-            # 만약을 대비해 오늘 데이터를 한번 덮어씁니다.
-            print("✅ Already up to date! Re-syncing today for good measure.")
-            self.sync_date(today_date.strftime("%Y-%m-%d"), timezone)
-            return
-                
-        print(f"🔄 Syncing {len(dates_to_sync)} day(s): from {dates_to_sync[0]} to {dates_to_sync[-1]}")
-        
-        for date_str in dates_to_sync:
-            print(f"\n📥 Syncing {date_str}...")
-            self.sync_date(date_str, timezone)
-
-        print("\n🎉 Sync process completed.")

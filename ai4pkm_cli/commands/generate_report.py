@@ -18,95 +18,133 @@ class GenerateReport:
         self.agent = agent
         
     def generate_interactive_report(self):
-        """Generate a report with interactive user inputs."""
+        """Generate a report with an improved, context-aware interactive workflow."""
         self.console.print("\n[bold blue]Generate Report[/bold blue]")
-        self.console.print("Please provide the following information:")
         
         try:
-            # Calculate default times (start and end of today)
-            today = datetime.now()
-            start_of_day = today.replace(hour=0, minute=0, second=0, microsecond=0)
-            end_of_day = today.replace(hour=23, minute=59, second=59, microsecond=0)
-            
-            default_start = start_of_day.strftime("%Y-%m-%d %H:%M")
-            default_end = end_of_day.strftime("%Y-%m-%d %H:%M")
-            
-            # Get user inputs
-            start_time = Prompt.ask(
-                "\n[cyan]Start time[/cyan] (YYYY-MM-DD HH:MM)", 
-                default=default_start
+            event_name = None
+            data_sources = []
+
+            # 1. Select a template first
+            all_templates = self._get_available_templates()
+            if not all_templates:
+                self.console.print("\n[yellow]No templates found in _Settings_/Templates/ or any event folders.[/yellow]")
+                return
+
+            template_name = interactive_select(
+                all_templates, 
+                "Select a Report Template",
+                self.console
             )
-            end_time = Prompt.ask(
-                "[cyan]End time[/cyan] (YYYY-MM-DD HH:MM)", 
-                default=default_end
-            )
-            name = Prompt.ask("[cyan]Name[/cyan]")
-            description = Prompt.ask("[cyan]Description of the activity[/cyan]")
+
+            # 2. Conditionally select an event if the template suggests it
+            if "event" in template_name.lower() or "festival" in template_name.lower():
+                events = self._get_available_events()
+                if not events:
+                    self.console.print("\n[yellow]No events found in Events/ directory, but the template seems to require one.[/yellow]")
+                else:
+                    event_name = interactive_select(
+                        events, 
+                        "Select the Event for this Report",
+                        self.console
+                    )
+                    
+                    # Set data sources based on the selected event
+                    potential_sources = [f"Events/{event_name}/processed_data"]
+                    data_sources = [path for path in potential_sources if os.path.exists(path) and os.path.isdir(path)]
+                    
+                    if not data_sources:
+                        self.console.print("\n[yellow]No processed_data directory found for the selected event. Report generation might be incomplete.[/yellow]")
+
+            # 3. Load the template content from the correct location
+            template_path = None
+            if event_name:
+                # Prioritize event-specific template
+                for ext in ['.md', '.txt']:
+                    path = f"Events/{event_name}/{template_name}{ext}"
+                    if os.path.exists(path):
+                        template_path = path
+                        break
             
-            # Interactive template selection
-            templates = self._get_available_templates()
-            if templates:
-                template_options = templates
-                template_name = interactive_select(
-                    template_options, 
-                    "Select Template",
-                    self.console
-                )
-            else:
-                self.console.print("\n[yellow]No templates found in _Settings_/Templates/ directory[/yellow]")
-                template_name = Prompt.ask("[cyan]Template name[/cyan]")
+            if not template_path:
+                # Fallback to global template
+                global_path = f"_Settings_/Templates/{template_name}.md"
+                if os.path.exists(global_path):
+                    template_path = global_path
             
-            # Generate the report
-            self.logger.info(f"Generating report '{name}'...")
-            
-            # Load the template content
-            template_file = f"_Settings_/Templates/{template_name}.md"
-            if not os.path.exists(template_file):
-                self.logger.error(f"Template file not found: {template_file}")
+            if not template_path:
+                self.logger.error(f"Template file '{template_name}' not found in event or global template directories.")
                 return
                 
-            with open(template_file, 'r') as f:
+            with open(template_path, 'r', encoding='utf-8') as f:
                 template_content = f.read()
+
+            # 4. Generate the report by sending the template content directly as the prompt
+            report_base_name = f"{event_name} Report" if event_name else f"{template_name}"
+            self.logger.info(f"Generating report from template '{template_name}'...")
             
-            # Prepare parameters for the prompt
-            params = {
-                "name": name,
-                "description": description,
-                "start_time": start_time,
-                "end_time": end_time,
-                "template_name": template_name,
-                "template_content": template_content,
-                "timestamp": datetime.now().isoformat()
-            }
+            # Prepare the final prompt by injecting data_sources directly into the template content
+            final_prompt = template_content.format(data_sources=data_sources)
             
-            # Run the prompt with parameters
-            result = self.agent.run_prompt(prompt_name="Adhoc/generate_report", params=params)
+            result = self.agent.run_prompt(inline_prompt=final_prompt)
             report_content = result[0] if result and result[0] else None
             
             if report_content:
-                # Save the report
-                report_filename = self._save_report(name, report_content)
+                report_filename = self._save_report(report_base_name, report_content)
                 self.logger.info(f"Report saved to: {report_filename}")
             else:
-                self.logger.error("Failed to generate report")
+                self.logger.error("Failed to generate report content.")
                 
         except KeyboardInterrupt:
-            self.logger.warning("Report generation cancelled")
+            self.logger.warning("Report generation cancelled.")
         except Exception as e:
-            self.logger.error(f"Report generation error: {e}")
-            
-    def _get_available_templates(self):
-        """Get list of available templates."""
-        templates_dir = "_Settings_/Templates"
-        if not os.path.exists(templates_dir):
+            self.logger.error(f"An error occurred during report generation: {e}")
+
+    def _get_available_events(self):
+        """Get list of available events."""
+        events_dir = "Events"
+        if not os.path.exists(events_dir):
             return []
             
-        templates = []
-        for file in os.listdir(templates_dir):
-            if file.endswith('.md'):
-                templates.append(file[:-3])  # Remove .md extension
+        events = []
+        for item in os.listdir(events_dir):
+            if os.path.isdir(os.path.join(events_dir, item)):
+                events.append(item)
                 
-        return sorted(templates)
+        return sorted(events)
+
+    def _get_available_templates(self, event_name=None):
+        """
+        Get a combined list of available templates.
+        If event_name is provided, it includes templates from that specific event and global ones.
+        If event_name is None, it includes templates from ALL events and global templates.
+        """
+        templates = set()
+
+        # Helper to add templates from a directory, removing the extension
+        def find_templates_in_dir(directory, extensions):
+            if os.path.exists(directory):
+                for file in os.listdir(directory):
+                    if file.endswith(extensions):
+                        templates.add(os.path.splitext(file)[0])
+
+        # Find global templates
+        find_templates_in_dir("_Settings_/Templates", ('.md',))
+
+        # Find event-specific templates
+        events_dir = "Events"
+        if os.path.exists(events_dir):
+            if event_name:
+                # Find from a specific event folder if provided
+                find_templates_in_dir(os.path.join(events_dir, event_name), ('.md', '.txt'))
+            else:
+                # Find from all event folders for the initial listing
+                for event in os.listdir(events_dir):
+                    event_path = os.path.join(events_dir, event)
+                    if os.path.isdir(event_path):
+                        find_templates_in_dir(event_path, ('.md', '.txt'))
+        
+        return sorted(list(templates))
         
     def _save_report(self, name, content):
         """Save the generated report to the Reports directory."""

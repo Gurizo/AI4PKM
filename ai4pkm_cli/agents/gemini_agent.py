@@ -59,6 +59,7 @@ class GeminiAgent(BaseAgent):
                 self.command,
                 '--prompt', f'"{prompt_content}"'
             ]
+            print(prompt_content)
             
             # Add any additional CLI options from config
             if 'additional_args' in self.config:
@@ -66,8 +67,8 @@ class GeminiAgent(BaseAgent):
             
             # Execute the command - show full command
             self.logger.debug(f"Executing Gemini command: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300, cwd=os.path.join(os.getcwd(), "Events/Bellevue_Festival_2025"))
+
             if result.returncode == 0:
                 return result.stdout.strip()
             else:
