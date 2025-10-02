@@ -88,7 +88,7 @@ def main(
         app.execute_prompt(prompt, agent)
     elif command:
         # Execute the command
-        app.execute_command(command, json.loads(arguments))
+        app.execute_command(command, json.loads(arguments or '{}'))
     elif test_cron:
         # Test a specific cron job
         app.test_cron_job()
