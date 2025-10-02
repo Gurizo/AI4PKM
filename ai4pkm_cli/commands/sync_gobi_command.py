@@ -16,11 +16,11 @@ class SyncGobiCommand:
         self.logger = logger
         self.config = Config()
         self.api_key = os.getenv("GOBI_API_KEY")
-        gobi_config = self.config.get("gobi_sync", {})
-        self.api_base_url = gobi_config.get(
+        self.gobi_config = self.config.get("gobi_sync", {})
+        self.api_base_url = self.gobi_config.get(
             "api_base_url", "https://api.joingobi.com/api"
         )
-        self.output_dir = Path(gobi_config.get("output_dir", "Ingest/Gobi"))
+        self.output_dir = Path(self.gobi_config.get("output_dir", "Ingest/Gobi"))
 
     def run_sync(self):
         """
@@ -34,10 +34,19 @@ class SyncGobiCommand:
 
         self.logger.info("Starting Gobi data sync command...")
         try:
-            local_timezone = get_localzone()
-            timezone_name = str(local_timezone)
-            self.logger.info(f"Using local timezone: {timezone_name}")
-
+            # Check for local_timezone setting first, fallback to get_localzone()
+            gobi_config = self.config.get("gobi_sync", {})
+            local_timezone_setting = gobi_config.get("local_timezone")
+            if local_timezone_setting:
+                local_timezone = pytz.timezone(local_timezone_setting)
+                timezone_name = local_timezone_setting
+                self.logger.info(f"Using configured timezone: {timezone_name}")
+            else:
+                local_timezone = get_localzone()
+                timezone_name = str(local_timezone)
+                self.logger.info(f"Using system local timezone: {timezone_name}")
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+            
             transcriptions, frames = self.fetch_all_data()
 
             markdowns = self.format_data_markdown(transcriptions, frames, timezone_name)
@@ -95,18 +104,18 @@ class SyncGobiCommand:
                     if not line:
                         continue
                     date_time_str = ":".join(line.split(":")[:-1])
-                    date_time_str = date_time_str[:-6] + "Z"
-                    # subtract 137.7 seconds from date_time_str
-                    # due to bug in 704 below builds
+                    speaker = date_time_str.split("@")[0]
+                    date_time_str = date_time_str.split("@")[1][:-6] + "Z"
                     date_time_str = datetime.fromisoformat(
                         date_time_str.replace("Z", "+00:00")
-                    ) - timedelta(seconds=137.7)
+                    )
                     date_time_str = date_time_str.strftime("%Y-%m-%dT%H:%M:%SZ")
                     transcriptions.append(
                         {
                             **transcription,
                             "transcription": line.split(": ")[-1],
                             "created_at": date_time_str,
+                            "speaker": speaker,
                         }
                     )
             frames.extend(data.get("frames", []))
@@ -150,6 +159,7 @@ class SyncGobiCommand:
         transcription = entry.get("transcription")
         download_url = entry.get("downloadUrl")
         timestamp = entry.get("created_at")
+        speaker = entry.get("speaker")
 
         dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         local_dt = dt.astimezone(local_tz)
@@ -157,7 +167,7 @@ class SyncGobiCommand:
 
         if transcription:
             markdown_line = (
-                f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} {transcription}\n"
+                f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} {speaker}: {transcription}\n"
             )
             return date_key, markdown_line, None
         elif download_url:
@@ -168,7 +178,7 @@ class SyncGobiCommand:
             day = local_dt.strftime("%d")
             hour = local_dt.strftime("%H")
 
-            relative_dir = f"frames/{year}/{month}/{day}/{hour}"
+            relative_dir = f"./frames/{year}/{month}/{day}/{hour}"
             frames_dir = self.output_dir / relative_dir
             frames_dir.mkdir(parents=True, exist_ok=True)
             file_path = frames_dir / filename

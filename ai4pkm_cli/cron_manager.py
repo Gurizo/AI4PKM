@@ -56,7 +56,7 @@ class CronManager:
         try:
             # Create temporary config for this agent type
             temp_config = Config()
-            temp_config.config["agent"] = job_agent_type  # Modify in memory only
+            temp_config.config["default-agent"] = job_agent_type  # Modify in memory only
 
             agent = AgentFactory.create_agent(self.logger, temp_config)
             self.agent_cache[job_agent_type] = agent
@@ -145,6 +145,7 @@ class CronManager:
             try:
                 inline_prompt = job.get("inline_prompt")
                 command = job.get("command")
+                arguments = job.get("arguments")
                 cron_expr = job.get("cron")
                 enabled = job.get("enabled", True)
 
@@ -169,7 +170,7 @@ class CronManager:
                     if inline_prompt:
                         self._run_job_with_agent(inline_prompt, agent)
                     else:
-                        self._run_job_with_command(command, agent)
+                        self._run_job_with_command(command, arguments, agent)
 
             except Exception as e:
                 self.logger.error(f"Error checking job {job}: {e}")

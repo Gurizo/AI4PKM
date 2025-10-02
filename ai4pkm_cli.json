@@ -76,7 +76,7 @@
     },
     {
       "command": "sync-gobi",
-      "cron": "*/30 * * * *",
+      "cron": "* * * * *",
       "description": "Automatically sync Gobi data every 30 minutes",
       "enabled": false
     }

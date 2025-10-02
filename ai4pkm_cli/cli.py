@@ -12,6 +12,7 @@ from .logger import Logger
 from .config import Config
 from .agent_factory import AgentFactory
 from .commands.command_runner import CommandRunner
+from .server import Server
 
 
 class PKMApp:
@@ -36,6 +37,7 @@ class PKMApp:
             self.agent = AgentFactory.create_agent(self.logger, self.config)
         self.command_runner = CommandRunner(self.logger, self.config)
         self.running = False
+        self.server = None
 
     def find_matching_prompt(self, prompt_query):
         """Find matching prompt in the Prompts folder."""
@@ -130,7 +132,7 @@ class PKMApp:
             try:
                 # Create a temporary config without saving to disk
                 temp_config = Config()
-                temp_config.config["agent"] = agent_override  # Modify in memory only
+                temp_config.config["default-agent"] = agent_override  # Modify in memory only
                 execution_agent = AgentFactory.create_agent(self.logger, temp_config)
                 self.logger.info(
                     f"🤖 Using {execution_agent.get_agent_name()} for this prompt execution"
@@ -286,10 +288,14 @@ class PKMApp:
             )
 
     def run_continuous(self):
-        """Run continuously with cron jobs and log display."""
+        """Run continuously with cron jobs, log display, and web API server."""
         self.running = True
         self.cron_manager = CronManager(self.logger, self.agent)
 
+        # Start web API server for custom chat endpoint
+        self.server = Server(self.logger, self.config)
+        self.server.start_server()
+        
         # Display welcome message
         self._display_welcome()
 
@@ -309,6 +315,11 @@ class PKMApp:
         panel = Panel(welcome_text, title="PKM CLI", border_style="blue")
         self.console.print(panel)
 
+        # Display web API server status
+        if self.server and self.server.is_server_running():
+            api_port = self.config.get_web_api_port()
+            self.console.print(f"\n[green]🌐 Web Server: Running on port {api_port}[/green]")
+        
         # Display cron job status
         jobs = self.cron_manager.get_jobs()
         if jobs:
